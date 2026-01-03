@@ -124,16 +124,12 @@ input.placar-input{
 
 <script>
 /* ================= FIREBASE ================= */
-const firebaseConfig = {
+firebase.initializeApp({
   apiKey: "AIzaSyCovHcUFKP9dtwRxfnajhvGUgluCFp0HVQ",
   authDomain: "liga4x4volei-71358.firebaseapp.com",
-  projectId: "liga4x4volei-71358",
-  storageBucket: "liga4x4volei-71358.firebasestorage.app",
-  messagingSenderId: "1053515939836",
-  appId: "1:1053515939836:web:922b96a35117d9d6a93c79"
-};
+  projectId: "liga4x4volei-71358"
+});
 
-firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
 const REF = db.collection("liga4x4").doc("dados");
 
@@ -141,22 +137,15 @@ const REF = db.collection("liga4x4").doc("dados");
 const SENHA = "liga4x4";
 let isAdmin = false;
 
-/* ============ TIMES ============ */
+/* ============ TIMES FIXOS ============ */
 const TIMES = Array.from({length:12},(_,i)=>`t${i+1}`);
+
+/* NOMES */
 let nomesTimes = {};
 TIMES.forEach((id,i)=>nomesTimes[id]=`Time ${i+1}`);
 
-/* ============ JOGOS (66) ============ */
+/* JOGOS */
 let jogos = [];
-for(let i=0;i<TIMES.length;i++){
-  for(let j=i+1;j<TIMES.length;j++){
-    jogos.push({
-      a: TIMES[i],
-      b: TIMES[j],
-      sets: [[null,null],[null,null],[null,null]]
-    });
-  }
-}
 
 /* ================= ADMIN ================= */
 function toggleAdmin(){
@@ -165,6 +154,38 @@ function toggleAdmin(){
     isAdmin = !isAdmin;
     render();
   }
+}
+
+/* ================= INIT ================= */
+async function iniciar(){
+  const snap = await REF.get();
+
+  if(snap.exists){
+    const data = snap.data();
+
+    if(data.nomesTimes) nomesTimes = data.nomesTimes;
+    if(Array.isArray(data.jogos)) jogos = data.jogos;
+  }
+
+  if(!Array.isArray(jogos) || jogos.length === 0){
+    jogos = [];
+    for(let i=0;i<TIMES.length;i++){
+      for(let j=i+1;j<TIMES.length;j++){
+        jogos.push({
+          a: TIMES[i],
+          b: TIMES[j],
+          sets: [[null,null],[null,null],[null,null]]
+        });
+      }
+    }
+    await salvar();
+  }
+
+  render();
+}
+
+async function salvar(){
+  await REF.set({ nomesTimes, jogos }, { merge:true });
 }
 
 /* ================= RENDER ================= */
@@ -179,20 +200,18 @@ function renderClassificacao(){
     .sort(([,a],[,b])=>b.sets-a.sets||b.saldo-a.saldo||b.vit-a.vit);
 
   const tb = document.getElementById("classificacao");
-  tb.innerHTML = "";
+  tb.innerHTML="";
 
   ranking.forEach(([id,s],i)=>{
-    const tr = document.createElement("tr");
+    const tr=document.createElement("tr");
     if(i<4) tr.className="classificado";
 
-    tr.innerHTML = `
+    tr.innerHTML=`
       <td>${i+1}</td>
-      <td>
-        ${isAdmin
-          ? `<input class="nome-time" data-id="${id}" value="${nomesTimes[id]}">`
-          : `<strong>${nomesTimes[id]}</strong>`
-        }
-      </td>
+      <td>${isAdmin
+        ? `<input class="nome-time" data-id="${id}" value="${nomesTimes[id]}">`
+        : `<strong>${nomesTimes[id]}</strong>`
+      }</td>
       <td>${s.j}</td>
       <td>${s.sets}</td>
       <td>${s.saldo}</td>
@@ -203,9 +222,9 @@ function renderClassificacao(){
 
   if(isAdmin){
     document.querySelectorAll(".nome-time").forEach(inp=>{
-      inp.oninput = async e=>{
-        nomesTimes[e.target.dataset.id] = e.target.value;
-        await REF.update({nomesTimes});
+      inp.oninput=e=>{
+        nomesTimes[e.target.dataset.id]=e.target.value;
+        salvar();
         renderJogos();
       };
     });
@@ -213,13 +232,13 @@ function renderClassificacao(){
 }
 
 function renderJogos(){
-  const div = document.getElementById("jogos");
-  div.innerHTML = "";
+  const div=document.getElementById("jogos");
+  div.innerHTML="";
 
   jogos.forEach((j,i)=>{
-    const el = document.createElement("div");
+    const el=document.createElement("div");
     el.className="jogo";
-    el.innerHTML = `
+    el.innerHTML=`
       <h3>Jogo ${i+1}</h3>
       <div class="times">
         <span>${nomesTimes[j.a]}</span>
@@ -249,25 +268,25 @@ function renderJogos(){
 }
 
 /* ================= LÓGICA ================= */
-async function atualizar(i,s,t,v){
-  jogos[i].sets[s][t] = v===""?null:+v;
-  await REF.update({jogos});
+function atualizar(i,s,t,v){
+  jogos[i].sets[s][t]=v===""?null:+v;
+  salvar();
   renderClassificacao();
 }
 
 function calcularStats(){
-  const stats = {};
+  const stats={};
   TIMES.forEach(id=>stats[id]={j:0,sets:0,saldo:0,vit:0});
 
   jogos.forEach(j=>{
     let sa=0,sb=0,real=false;
     j.sets.forEach(s=>{
-      if(s[0]!=null && s[1]!=null){
+      if(s[0]!=null&&s[1]!=null){
         real=true;
         if(s[0]>s[1]){
-          sa++; stats[j.a].sets++; stats[j.a].saldo++; stats[j.b].saldo--;
+          sa++;stats[j.a].sets++;stats[j.a].saldo++;stats[j.b].saldo--;
         }else{
-          sb++; stats[j.b].sets++; stats[j.b].saldo++; stats[j.a].saldo--;
+          sb++;stats[j.b].sets++;stats[j.b].saldo++;stats[j.a].saldo--;
         }
       }
     });
@@ -278,22 +297,6 @@ function calcularStats(){
   return stats;
 }
 
-/* ================= START ================= */
-async function iniciar(){
-  const snap = await REF.get();
-  if(snap.exists){
-    const data = snap.data();
-    nomesTimes = data.nomesTimes;
-    jogos = data.jogos;
-  }else{
-    await REF.set({
-      nomesTimes,
-      jogos,
-      timestamp: new Date().toISOString()
-    });
-  }
-  render();
-}
 iniciar();
 </script>
 
