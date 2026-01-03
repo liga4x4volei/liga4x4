@@ -2,32 +2,46 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<title>🏐 Liga 4x4 – Classificação e Jogos</title>
+<title>🏐 Liga 4x4</title>
 
 <style>
-body{font-family:Arial;background:linear-gradient(90deg,#004aad,#8ba9d1);margin:0;padding:10px}
+body{
+  font-family:Arial;
+  background:linear-gradient(90deg,#004aad,#8ba9d1);
+  margin:0;padding:10px
+}
 h1,h2{color:#fff;text-align:center}
-table{width:100%;border-collapse:collapse;background:#fff;margin-bottom:20px}
-th,td{border:1px solid #ddd;padding:8px;text-align:center}
+
+table{width:100%;background:#fff;border-collapse:collapse}
+th,td{border:1px solid #ddd;padding:6px;text-align:center}
 th{background:#111;color:#fff}
 .classificado{background:#c40000;color:#fff;font-weight:bold}
 
-.nome-time{width:100%;font-weight:bold;text-align:center}
-
-.jogos{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.jogos{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
 @media(max-width:800px){.jogos{grid-template-columns:1fr}}
 
-.jogo{background:#fff;border-radius:10px;padding:12px}
-.times{display:flex;justify-content:space-between;align-items:center;font-weight:bold}
-.time{display:flex;align-items:center;gap:6px}
+.jogo{background:#fff;padding:10px;border-radius:10px}
+.times{display:flex;justify-content:space-between;font-weight:bold}
 
-.time img{width:28px;height:28px;object-fit:contain}
+.time{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.time img{
+  width:24px;
+  height:24px;
+  object-fit:contain;
+}
 
-.set{margin-top:6px;text-align:center}
-.placar{display:flex;gap:6px;justify-content:center}
-input{width:45px;text-align:center}
+.sets{display:flex;justify-content:space-around}
+.placar{display:flex;align-items:center;gap:4px}
+input{width:40px;text-align:center}
 
-.admin{position:fixed;bottom:15px;right:15px;padding:12px;background:#111;color:#fff;border:none;border-radius:20px}
+.admin-btn{
+  position:fixed;bottom:15px;right:15px;
+  padding:10px;border:none;border-radius:20px
+}
 </style>
 </head>
 
@@ -35,136 +49,157 @@ input{width:45px;text-align:center}
 
 <h1>🏐 Liga 4x4</h1>
 
-<h2>🏆 Classificação</h2>
+<h2>Classificação</h2>
 <table>
 <thead>
-<tr><th>Pos</th><th>Time</th><th>J</th><th>Sets+</th><th>Saldo</th><th>Vit</th></tr>
+<tr><th>#</th><th>Time</th><th>J</th><th>Sets+</th><th>Saldo</th><th>Vit</th></tr>
 </thead>
 <tbody id="classificacao"></tbody>
 </table>
 
-<h2>📋 Jogos</h2>
+<h2>Jogos</h2>
 <div class="jogos" id="jogos"></div>
 
-<button class="admin" onclick="toggleAdmin()">ADMIN</button>
+<button class="admin-btn" onclick="admin()">ADMIN</button>
 
 <!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-storage-compat.js"></script>
 
 <script>
 const firebaseConfig = {
   apiKey: "AIzaSyCovHcUFKP9dtwRxfnajhvGUgluCFp0HVQ",
   authDomain: "liga4x4volei-71358.firebaseapp.com",
-  projectId: "liga4x4volei-71358"
+  projectId: "liga4x4volei-71358",
+  storageBucket: "liga4x4volei-71358.appspot.com"
 };
+
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
+const storage = firebase.storage();
 const REF = db.collection("liga4x4").doc("dados");
 
 const SENHA="liga4x4";
-let admin=false;
+let isAdmin=false;
 
-const IDS=[...Array(12)].map((_,i)=>"t"+(i+1));
+const TIMES=[...Array(12)].map((_,i)=>"t"+(i+1));
 
-let times={}, jogos=[];
+let times={};
+TIMES.forEach(id=>{
+  times[id]={nome:"Time "+id.substring(1),logo:""}
+});
 
-function gerarBase(){
-  IDS.forEach(id=>times[id]={nome:"Time "+id.substring(1),logo:""});
-  for(let i=0;i<IDS.length;i++)
-    for(let j=i+1;j<IDS.length;j++)
-      jogos.push({a:IDS[i],b:IDS[j],sets:[[null,null],[null,null],[null,null]]});
+let jogos=[];
+for(let i=0;i<TIMES.length;i++){
+  for(let j=i+1;j<TIMES.length;j++){
+    jogos.push({
+      a:TIMES[i],
+      b:TIMES[j],
+      sets:{
+        s1:{a:null,b:null},
+        s2:{a:null,b:null},
+        tb:{a:null,b:null}
+      }
+    });
+  }
 }
 
-function toggleAdmin(){
-  if(prompt("Senha:")==SENHA){admin=!admin;render();}
+function admin(){
+  if(prompt("Senha")==SENHA){isAdmin=!isAdmin;render();}
+}
+
+async function uploadLogo(e,id){
+  const file=e.target.files[0];
+  if(!file)return;
+  const ref=storage.ref(`logos/${id}.png`);
+  await ref.put(file);
+  times[id].logo=await ref.getDownloadURL();
+  save();
+  render();
+}
+
+async function save(){
+  await REF.set({times,jogos});
+}
+
+function calc(){
+  const s={};
+  TIMES.forEach(id=>s[id]={j:0,sets:0,saldo:0,vit:0});
+
+  jogos.forEach(j=>{
+    let a=0,b=0,real=false;
+    Object.values(j.sets).forEach(set=>{
+      if(set.a!=null&&set.b!=null){
+        real=true;
+        if(set.a>set.b){a++;s[j.a].sets++;s[j.a].saldo++;s[j.b].saldo--}
+        else{b++;s[j.b].sets++;s[j.b].saldo++;s[j.a].saldo--}
+      }
+    });
+    if(real){s[j.a].j++;s[j.b].j++}
+    if(a>=2)s[j.a].vit++;
+    if(b>=2)s[j.b].vit++;
+  });
+  return s;
 }
 
 function render(){
-  renderClassificacao();
-  renderJogos();
-}
+  const stats=calc();
+  const rank=Object.entries(stats)
+    .sort(([,a],[,b])=>b.sets-a.sets||b.saldo-a.saldo);
 
-function renderClassificacao(){
-  const s=calc();
   const tb=document.getElementById("classificacao");
   tb.innerHTML="";
-  Object.entries(s).sort(([,a],[,b])=>b.sets-a.sets||b.saldo-a.saldo||b.vit-a.vit)
-  .forEach(([id,v],i)=>{
+  rank.forEach(([id,s],i)=>{
     tb.innerHTML+=`
-    <tr class="${i<4?'classificado':''}">
+    <tr class="${i<4?"classificado":""}">
       <td>${i+1}</td>
-      <td>
-        ${admin?`
-          <input class="nome-time" value="${times[id].nome}"
-          oninput="times['${id}'].nome=this.value;save();renderJogos()">`
-        :`
-          <div class="time">
-            ${times[id].logo?`<img src="${times[id].logo}">`:''}
-            ${times[id].nome}
-          </div>`}
+      <td class="time">
+        ${times[id].logo?`<img src="${times[id].logo}">`:""}
+        ${isAdmin?`
+          <input value="${times[id].nome}" oninput="times['${id}'].nome=this.value;save();render()">
+          <input type="file" onchange="uploadLogo(event,'${id}')">
+        `:times[id].nome}
       </td>
-      <td>${v.j}</td><td>${v.sets}</td><td>${v.saldo}</td><td>${v.vit}</td>
+      <td>${s.j}</td><td>${s.sets}</td><td>${s.saldo}</td><td>${s.vit}</td>
     </tr>`;
   });
-}
 
-function renderJogos(){
-  const d=document.getElementById("jogos"); d.innerHTML="";
+  const div=document.getElementById("jogos");
+  div.innerHTML="";
   jogos.forEach((j,i)=>{
-    d.innerHTML+=`
+    div.innerHTML+=`
     <div class="jogo">
-      <b>Jogo ${i+1}</b>
       <div class="times">
-        <div class="time">${times[j.a].logo?`<img src="${times[j.a].logo}">`:''}${times[j.a].nome}</div>
-        <div class="time">${times[j.b].logo?`<img src="${times[j.b].logo}">`:''}${times[j.b].nome}</div>
+        <div class="time">${times[j.a].logo?`<img src="${times[j.a].logo}">`:""}${times[j.a].nome}</div>
+        <div class="time">${times[j.b].logo?`<img src="${times[j.b].logo}">`:""}${times[j.b].nome}</div>
       </div>
-      ${j.sets.map((s,k)=>`
-        <div class="set">SET ${k+1}
-          <div class="placar">
-            <input ${admin?'':'disabled'} value="${s[0]??''}" onchange="upd(${i},${k},0,this.value)">
-            x
-            <input ${admin?'':'disabled'} value="${s[1]??''}" onchange="upd(${i},${k},1,this.value)">
+      <div class="sets">
+        ${Object.entries(j.sets).map(([k,v])=>`
+          <div>
+            ${k.toUpperCase()}
+            <div class="placar">
+              <input ${!isAdmin?"disabled":""} value="${v.a??""}"
+                onchange="jogos[${i}].sets.${k}.a=+this.value;save();render()">
+              x
+              <input ${!isAdmin?"disabled":""} value="${v.b??""}"
+                onchange="jogos[${i}].sets.${k}.b=+this.value;save();render()">
+            </div>
           </div>
-        </div>`).join("")}
+        `).join("")}
+      </div>
     </div>`;
   });
 }
 
-function upd(i,s,t,v){
-  jogos[i].sets[s][t]=v===''?null:+v;
-  save(); renderClassificacao();
-}
-
-function calc(){
-  const r={}; IDS.forEach(id=>r[id]={j:0,sets:0,saldo:0,vit:0});
-  jogos.forEach(j=>{
-    let sa=0,sb=0,ok=false;
-    j.sets.forEach(s=>{
-      if(s[0]!=null&&s[1]!=null){
-        ok=true;
-        if(s[0]>s[1]){sa++;r[j.a].sets++;r[j.a].saldo++;r[j.b].saldo--;}
-        else{sb++;r[j.b].sets++;r[j.b].saldo++;r[j.a].saldo--;}
-      }
-    });
-    if(ok){r[j.a].j++;r[j.b].j++;}
-    if(sa>=2)r[j.a].vit++;
-    if(sb>=2)r[j.b].vit++;
-  });
-  return r;
-}
-
-async function save(){
-  await REF.set({times,jogos},{merge:true});
-}
-
 async function start(){
   const s=await REF.get();
-  if(s.exists){({times,jogos}=s.data());}
-  else{gerarBase(); save();}
+  if(s.exists){({times,jogos}=s.data())}
+  else save();
   render();
 }
 start();
 </script>
+
 </body>
 </html>
