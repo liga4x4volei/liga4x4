@@ -255,8 +255,15 @@ function calc(){
   TIMES.forEach(id=>st[id]={j:0,sets:0,saldo:0,vit:0});
 
   jogos.forEach(j=>{
+    // 🔒 proteção contra dados inválidos
+    if(!j.sets) return;
+
     let sa=0,sb=0,real=false;
-    Object.values(j.sets).forEach(s=>{
+
+    ["s1","s2","tb"].forEach(k=>{
+      const s = j.sets[k];
+      if(!s) return;
+
       if(s.a!=null && s.b!=null){
         real=true;
         if(s.a>s.b){
@@ -266,10 +273,12 @@ function calc(){
         }
       }
     });
+
     if(real){st[j.a].j++;st[j.b].j++;}
     if(sa>=2)st[j.a].vit++;
     if(sb>=2)st[j.b].vit++;
   });
+
   return st;
 }
 
