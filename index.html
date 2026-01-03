@@ -2,21 +2,37 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🏐 Liga 4x4</title>
 
 <style>
-body{font-family:Arial;background:#004aad;color:#fff;margin:0;padding:10px}
-h1,h2{text-align:center}
+body{
+  font-family:Arial,sans-serif;
+  background:linear-gradient(90deg,#004aad,#8ba9d1);
+  margin:0;
+  padding:10px;
+}
+h1,h2{color:#fff;text-align:center}
 
-table{width:100%;background:#fff;color:#000;border-collapse:collapse}
-th,td{border:1px solid #ccc;padding:6px;text-align:center}
+table{
+  width:100%;
+  border-collapse:collapse;
+  background:#fff;
+  margin-bottom:20px;
+}
+th,td{
+  border:1px solid #ddd;
+  padding:6px;
+  text-align:center;
+}
 th{background:#111;color:#fff}
-.classificado{background:#c40000;color:#fff}
+.classificado{background:#c40000;color:#fff;font-weight:bold}
 
 .time-cell{
   display:flex;
   align-items:center;
   gap:6px;
+  justify-content:center;
 }
 .time-cell img{
   width:28px;
@@ -24,21 +40,53 @@ th{background:#111;color:#fff}
   object-fit:contain;
 }
 
-.jogos{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-top:20px}
-@media(max-width:900px){.jogos{grid-template-columns:1fr}}
+input.nome-time{
+  width:100%;
+  padding:4px;
+  font-weight:bold;
+}
 
-.jogo{background:#fff;color:#000;padding:10px;border-radius:8px}
-.times{display:flex;justify-content:space-between;font-weight:bold}
-
-.sets{display:flex;justify-content:space-around;margin-top:8px}
-.placar{display:flex;align-items:center;gap:4px}
-
-input{width:40px;text-align:center}
+.jogos{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+}
+@media(max-width:800px){
+  .jogos{grid-template-columns:1fr}
+}
+.jogo{
+  background:#fff;
+  padding:10px;
+  border-radius:8px;
+}
+.times{
+  display:flex;
+  justify-content:space-between;
+  font-weight:bold;
+}
+.sets{
+  display:flex;
+  justify-content:space-around;
+  margin-top:6px;
+}
+.placar{
+  display:flex;
+  gap:4px;
+}
+input{
+  width:40px;
+  text-align:center;
+}
 
 .admin-btn{
- position:fixed;bottom:15px;right:15px;
- background:#111;color:#fff;border:none;
- padding:10px 16px;border-radius:20px
+  position:fixed;
+  bottom:15px;
+  right:15px;
+  padding:10px 16px;
+  border:none;
+  border-radius:20px;
+  background:#111;
+  color:#fff;
 }
 </style>
 </head>
@@ -50,7 +98,14 @@ input{width:40px;text-align:center}
 <h2>🏆 Classificação</h2>
 <table>
 <thead>
-<tr><th>Pos</th><th>Time</th><th>J</th><th>Sets+</th><th>Saldo</th><th>Vit</th></tr>
+<tr>
+<th>Pos</th>
+<th>Time</th>
+<th>J</th>
+<th>Sets+</th>
+<th>Saldo</th>
+<th>Vit</th>
+</tr>
 </thead>
 <tbody id="classificacao"></tbody>
 </table>
@@ -65,127 +120,172 @@ input{width:40px;text-align:center}
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <script>
-/* FIREBASE */
+/* 🔥 FIREBASE */
 firebase.initializeApp({
- apiKey: "AIzaSyCovHcUFKP9dtwRxfnajhvGUgluCFp0HVQ",
- authDomain: "liga4x4volei-71358.firebaseapp.com",
- projectId: "liga4x4volei-71358"
+  apiKey: "AIzaSyCovHcUFKP9dtwRxfnajhvGUgluCFp0HVQ",
+  authDomain: "liga4x4volei-71358.firebaseapp.com",
+  projectId: "liga4x4volei-71358"
 });
 const db = firebase.firestore();
 const REF = db.collection("liga4x4").doc("dados");
 
 /* CONFIG */
-const TIMES=[...Array(12)].map((_,i)=>"t"+(i+1));
-let nomesTimes={}, jogos=[], isAdmin=false;
+const SENHA = "liga4x4";
+let isAdmin = false;
 
-/* DEFAULT */
-TIMES.forEach(id=>{
-  nomesTimes[id]={
-    nome:"Time "+id.substring(1),
-    logo:`https://raw.githubusercontent.com/SEUUSUARIO/liga4x4/main/logos/${id}.png`
-  }
+/* TIMES */
+const TIMES = Array.from({length:12},(_,i)=>`t${i+1}`);
+
+let nomesTimes = {};
+TIMES.forEach((id,i)=>{
+  nomesTimes[id] = {
+    nome: `Time ${i+1}`,
+    logo: `img/${id}.png`
+  };
 });
 
-/* JOGOS */
+/* JOGOS (SEM ARRAY ANINHADO) */
+let jogos = [];
 for(let i=0;i<TIMES.length;i++){
- for(let j=i+1;j<TIMES.length;j++){
-  jogos.push({a:TIMES[i],b:TIMES[j],sets:[[null,null],[null,null],[null,null]]});
- }
+  for(let j=i+1;j<TIMES.length;j++){
+    jogos.push({
+      a: TIMES[i],
+      b: TIMES[j],
+      sets:{
+        s1:{a:null,b:null},
+        s2:{a:null,b:null},
+        tb:{a:null,b:null}
+      }
+    });
+  }
 }
 
 /* ADMIN */
 function toggleAdmin(){
- if(prompt("Senha:")==="liga4x4"){isAdmin=!isAdmin;render();}
+  const s = prompt("Senha:");
+  if(s===SENHA){
+    isAdmin = !isAdmin;
+    render();
+  }
 }
 
 /* RENDER */
 function render(){
- renderClassificacao();
- renderJogos();
+  renderClassificacao();
+  renderJogos();
 }
 
 function renderClassificacao(){
- const stats=calc();
- const tb=document.getElementById("classificacao");
- tb.innerHTML="";
- Object.entries(stats).sort((a,b)=>b[1].sets-a[1].sets).forEach(([id,s],i)=>{
-  const t=nomesTimes[id]||{nome:id,logo:""};
-  tb.innerHTML+=`
-   <tr class="${i<4?"classificado":""}">
-    <td>${i+1}</td>
-    <td class="time-cell">
-      <img src="${t.logo}">
-      ${isAdmin?`<input value="${t.nome}" oninput="editNome('${id}',this.value)">`:t.nome}
-    </td>
-    <td>${s.j}</td><td>${s.sets}</td><td>${s.saldo}</td><td>${s.vit}</td>
-   </tr>`;
- });
+  const stats = calc();
+  const ranking = Object.entries(stats)
+    .sort(([,a],[,b])=>b.sets-a.sets||b.saldo-a.saldo||b.vit-a.vit);
+
+  const tb = document.getElementById("classificacao");
+  tb.innerHTML="";
+
+  ranking.forEach(([id,s],i)=>{
+    const tr=document.createElement("tr");
+    if(i<4) tr.className="classificado";
+
+    tr.innerHTML=`
+      <td>${i+1}</td>
+      <td class="time-cell">
+        <img src="${nomesTimes[id].logo}">
+        ${isAdmin
+          ? `<input class="nome-time" data-id="${id}" value="${nomesTimes[id].nome}">`
+          : nomesTimes[id].nome}
+      </td>
+      <td>${s.j}</td>
+      <td>${s.sets}</td>
+      <td>${s.saldo}</td>
+      <td>${s.vit}</td>
+    `;
+    tb.appendChild(tr);
+  });
+
+  if(isAdmin){
+    document.querySelectorAll(".nome-time").forEach(inp=>{
+      inp.oninput = async e=>{
+        nomesTimes[e.target.dataset.id].nome = e.target.value;
+        await REF.update({nomesTimes});
+        renderJogos();
+      };
+    });
+  }
 }
 
 function renderJogos(){
- const div=document.getElementById("jogos");
- div.innerHTML="";
- jogos.forEach((j,i)=>{
-  div.innerHTML+=`
-  <div class="jogo">
-   <div class="times">
-    <span>${nomesTimes[j.a]?.nome}</span>
-    <span>${nomesTimes[j.b]?.nome}</span>
-   </div>
-   <div class="sets">
-    ${[0,1,2].map(s=>`
-     <div>
-      <small>${s==2?"TIE":"SET "+(s+1)}</small>
-      <div class="placar">
-       <input ${!isAdmin?"disabled":""} onchange="setPlacar(${i},${s},0,this.value)">
-       x
-       <input ${!isAdmin?"disabled":""} onchange="setPlacar(${i},${s},1,this.value)">
+  const div=document.getElementById("jogos");
+  div.innerHTML="";
+
+  jogos.forEach((j,i)=>{
+    const el=document.createElement("div");
+    el.className="jogo";
+    el.innerHTML=`
+      <div class="times">
+        <span>${nomesTimes[j.a].nome}</span>
+        <span>${nomesTimes[j.b].nome}</span>
       </div>
-     </div>`).join("")}
-   </div>
-  </div>`;
- });
+
+      ${["s1","s2","tb"].map(s=>`
+        <div class="placar">
+          <input type="number" ${isAdmin?"":"disabled"}
+            value="${j.sets[s].a ?? ""}"
+            onchange="upd(${i},'${s}','a',this.value)">
+          x
+          <input type="number" ${isAdmin?"":"disabled"}
+            value="${j.sets[s].b ?? ""}"
+            onchange="upd(${i},'${s}','b',this.value)">
+        </div>
+      `).join("")}
+    `;
+    div.appendChild(el);
+  });
 }
 
-/* LÓGICA */
-function editNome(id,v){
- nomesTimes[id].nome=v;
- REF.set({nomesTimes,jogos},{merge:true});
- render();
-}
-
-function setPlacar(i,s,t,v){
- jogos[i].sets[s][t]=v===""?null:+v;
- REF.set({nomesTimes,jogos},{merge:true});
- render();
+/* LOGICA */
+async function upd(i,s,t,v){
+  jogos[i].sets[s][t] = v===""?null:+v;
+  await REF.update({jogos});
+  renderClassificacao();
 }
 
 function calc(){
- const st={}; TIMES.forEach(id=>st[id]={j:0,sets:0,saldo:0,vit:0});
- jogos.forEach(j=>{
-  let sa=0,sb=0,ok=false;
-  j.sets.forEach(s=>{
-   if(s[0]!=null&&s[1]!=null){
-    ok=true;
-    if(s[0]>s[1]){sa++;st[j.a].sets++;st[j.a].saldo++;st[j.b].saldo--;}
-    else{sb++;st[j.b].sets++;st[j.b].saldo++;st[j.a].saldo--;}
-   }
+  const st={};
+  TIMES.forEach(id=>st[id]={j:0,sets:0,saldo:0,vit:0});
+
+  jogos.forEach(j=>{
+    let sa=0,sb=0,real=false;
+    Object.values(j.sets).forEach(s=>{
+      if(s.a!=null && s.b!=null){
+        real=true;
+        if(s.a>s.b){
+          sa++; st[j.a].sets++; st[j.a].saldo++; st[j.b].saldo--;
+        }else{
+          sb++; st[j.b].sets++; st[j.b].saldo++; st[j.a].saldo--;
+        }
+      }
+    });
+    if(real){st[j.a].j++;st[j.b].j++;}
+    if(sa>=2)st[j.a].vit++;
+    if(sb>=2)st[j.b].vit++;
   });
-  if(ok){st[j.a].j++;st[j.b].j++;}
-  if(sa>=2)st[j.a].vit++;
-  if(sb>=2)st[j.b].vit++;
- });
- return st;
+  return st;
 }
 
 /* START */
-REF.get().then(s=>{
- if(s.exists){
-  nomesTimes=s.data().nomesTimes||nomesTimes;
-  jogos=s.data().jogos||jogos;
- }
- render();
-});
+async function start(){
+  const snap=await REF.get();
+  if(snap.exists){
+    const d=snap.data();
+    nomesTimes=d.nomesTimes;
+    jogos=d.jogos;
+  }else{
+    await REF.set({nomesTimes,jogos});
+  }
+  render();
+}
+start();
 </script>
 
 </body>
