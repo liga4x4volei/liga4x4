@@ -6,25 +6,17 @@
 <title>🏐 Liga 4x4 – Classificação e Jogos</title>
 
 <style>
-:root{
-  --vermelho:#c40000;
-  --preto:#111;
-  --branco:#fff;
-}
-*{box-sizing:border-box}
 body{
   font-family:Arial,sans-serif;
   background:linear-gradient(90deg,#004aad,#8ba9d1);
   margin:0;
   padding:10px;
 }
-h1,h2{color:#fff;text-align:center;margin:10px 0}
-
+h1,h2{color:#fff;text-align:center}
 table{
   width:100%;
-  border-collapse:collapse;
   background:#fff;
-  margin-bottom:20px;
+  border-collapse:collapse;
 }
 th,td{
   border:1px solid #ddd;
@@ -34,62 +26,40 @@ th,td{
 th{background:#111;color:#fff}
 .classificado{background:#c40000;color:#fff;font-weight:bold}
 
-input.nome-time{
-  width:100%;
-  padding:6px;
-  font-weight:bold;
-  text-align:center;
-}
-
 .jogos{
   display:grid;
   grid-template-columns:repeat(2,1fr);
   gap:12px;
+  margin-top:15px;
 }
-@media(max-width:800px){
-  .jogos{grid-template-columns:1fr}
-}
-
 .jogo{
   background:#fff;
-  border-radius:10px;
   padding:12px;
-  box-shadow:0 2px 6px rgba(0,0,0,.2);
+  border-radius:10px;
 }
-.jogo h3{text-align:center;margin:5px 0}
 .times{
   display:flex;
   justify-content:space-between;
   font-weight:bold;
-  margin-bottom:10px;
+  margin-bottom:8px;
 }
-.sets{
-  display:flex;
-  justify-content:space-around;
+.set{
+  text-align:center;
 }
-.set{text-align:center}
-.set small{display:block;margin-bottom:4px}
 .placar{
   display:flex;
-  align-items:center;
-  gap:6px;
+  gap:5px;
+  justify-content:center;
 }
-input.placar-input{
+input{
   width:45px;
   text-align:center;
-  font-size:16px;
 }
-
-.admin-btn{
+button{
   position:fixed;
   bottom:15px;
   right:15px;
   padding:12px 18px;
-  border:none;
-  border-radius:20px;
-  background:#111;
-  color:#fff;
-  font-size:14px;
 }
 </style>
 </head>
@@ -102,12 +72,7 @@ input.placar-input{
 <table>
 <thead>
 <tr>
-  <th>Pos</th>
-  <th>Time</th>
-  <th>J</th>
-  <th>Sets+</th>
-  <th>Saldo</th>
-  <th>Vit</th>
+<th>Pos</th><th>Time</th><th>J</th><th>Sets+</th><th>Saldo</th><th>Vit</th>
 </tr>
 </thead>
 <tbody id="classificacao"></tbody>
@@ -116,14 +81,12 @@ input.placar-input{
 <h2>📋 Jogos</h2>
 <div class="jogos" id="jogos"></div>
 
-<button class="admin-btn" onclick="toggleAdmin()">ADMIN</button>
+<button onclick="toggleAdmin()">ADMIN</button>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
 
 <script>
-/* ================= FIREBASE ================= */
 firebase.initializeApp({
   apiKey: "AIzaSyCovHcUFKP9dtwRxfnajhvGUgluCFp0HVQ",
   authDomain: "liga4x4volei-71358.firebaseapp.com",
@@ -133,161 +96,58 @@ firebase.initializeApp({
 const db = firebase.firestore();
 const REF = db.collection("liga4x4").doc("dados");
 
-/* ================= CONFIG ================= */
-const SENHA = "liga4x4";
-let isAdmin = false;
-
-/* ============ TIMES FIXOS ============ */
 const TIMES = Array.from({length:12},(_,i)=>`t${i+1}`);
-
-/* NOMES */
 let nomesTimes = {};
 TIMES.forEach((id,i)=>nomesTimes[id]=`Time ${i+1}`);
 
-/* JOGOS */
 let jogos = [];
+let isAdmin = false;
 
-/* ================= ADMIN ================= */
+function criarJogos(){
+  jogos=[];
+  for(let i=0;i<TIMES.length;i++){
+    for(let j=i+1;j<TIMES.length;j++){
+      jogos.push({
+        a:TIMES[i],
+        b:TIMES[j],
+        sets:{
+          s1:{a:null,b:null},
+          s2:{a:null,b:null},
+          s3:{a:null,b:null}
+        }
+      });
+    }
+  }
+}
+
 function toggleAdmin(){
-  const s = prompt("Senha:");
-  if(s===SENHA){
-    isAdmin = !isAdmin;
+  if(prompt("Senha:")==="liga4x4"){
+    isAdmin=!isAdmin;
     render();
   }
 }
 
-/* ================= INIT ================= */
-async function iniciar(){
-  const snap = await REF.get();
-
-  if(snap.exists){
-    const data = snap.data();
-
-    if(data.nomesTimes) nomesTimes = data.nomesTimes;
-    if(Array.isArray(data.jogos)) jogos = data.jogos;
-  }
-
-  if(!Array.isArray(jogos) || jogos.length === 0){
-    jogos = [];
-    for(let i=0;i<TIMES.length;i++){
-      for(let j=i+1;j<TIMES.length;j++){
-        jogos.push({
-          a: TIMES[i],
-          b: TIMES[j],
-          sets: [[null,null],[null,null],[null,null]]
-        });
-      }
-    }
-    await salvar();
-  }
-
-  render();
-}
-
 async function salvar(){
-  await REF.set({ nomesTimes, jogos }, { merge:true });
+  await REF.set({nomesTimes,jogos},{merge:true});
 }
 
-/* ================= RENDER ================= */
-function render(){
-  renderClassificacao();
-  renderJogos();
-}
-
-function renderClassificacao(){
-  const stats = calcularStats();
-  const ranking = Object.entries(stats)
-    .sort(([,a],[,b])=>b.sets-a.sets||b.saldo-a.saldo||b.vit-a.vit);
-
-  const tb = document.getElementById("classificacao");
-  tb.innerHTML="";
-
-  ranking.forEach(([id,s],i)=>{
-    const tr=document.createElement("tr");
-    if(i<4) tr.className="classificado";
-
-    tr.innerHTML=`
-      <td>${i+1}</td>
-      <td>${isAdmin
-        ? `<input class="nome-time" data-id="${id}" value="${nomesTimes[id]}">`
-        : `<strong>${nomesTimes[id]}</strong>`
-      }</td>
-      <td>${s.j}</td>
-      <td>${s.sets}</td>
-      <td>${s.saldo}</td>
-      <td>${s.vit}</td>
-    `;
-    tb.appendChild(tr);
-  });
-
-  if(isAdmin){
-    document.querySelectorAll(".nome-time").forEach(inp=>{
-      inp.oninput=e=>{
-        nomesTimes[e.target.dataset.id]=e.target.value;
-        salvar();
-        renderJogos();
-      };
-    });
-  }
-}
-
-function renderJogos(){
-  const div=document.getElementById("jogos");
-  div.innerHTML="";
-
-  jogos.forEach((j,i)=>{
-    const el=document.createElement("div");
-    el.className="jogo";
-    el.innerHTML=`
-      <h3>Jogo ${i+1}</h3>
-      <div class="times">
-        <span>${nomesTimes[j.a]}</span>
-        <span>${nomesTimes[j.b]}</span>
-      </div>
-      <div class="sets">
-        ${[0,1,2].map(s=>`
-          <div class="set">
-            <small>${s===2?"TIE":"SET "+(s+1)}</small>
-            <div class="placar">
-              <input class="placar-input" type="number"
-                ${isAdmin?"":"disabled"}
-                value="${j.sets[s][0] ?? ""}"
-                onchange="atualizar(${i},${s},0,this.value)">
-              <span>x</span>
-              <input class="placar-input" type="number"
-                ${isAdmin?"":"disabled"}
-                value="${j.sets[s][1] ?? ""}"
-                onchange="atualizar(${i},${s},1,this.value)">
-            </div>
-          </div>
-        `).join("")}
-      </div>
-    `;
-    div.appendChild(el);
-  });
-}
-
-/* ================= LÓGICA ================= */
-function atualizar(i,s,t,v){
-  jogos[i].sets[s][t]=v===""?null:+v;
+function atualizar(j,s,t,v){
+  jogos[j].sets[s][t]=v===""?null:+v;
   salvar();
   renderClassificacao();
 }
 
-function calcularStats(){
+function calcular(){
   const stats={};
-  TIMES.forEach(id=>stats[id]={j:0,sets:0,saldo:0,vit:0});
+  TIMES.forEach(t=>stats[t]={j:0,sets:0,saldo:0,vit:0});
 
   jogos.forEach(j=>{
     let sa=0,sb=0,real=false;
-    j.sets.forEach(s=>{
-      if(s[0]!=null&&s[1]!=null){
+    Object.values(j.sets).forEach(s=>{
+      if(s.a!=null && s.b!=null){
         real=true;
-        if(s[0]>s[1]){
-          sa++;stats[j.a].sets++;stats[j.a].saldo++;stats[j.b].saldo--;
-        }else{
-          sb++;stats[j.b].sets++;stats[j.b].saldo++;stats[j.a].saldo--;
-        }
+        if(s.a>s.b){sa++;stats[j.a].sets++;stats[j.a].saldo++;stats[j.b].saldo--;}
+        else{sb++;stats[j.b].sets++;stats[j.b].saldo++;stats[j.a].saldo--;}
       }
     });
     if(real){stats[j.a].j++;stats[j.b].j++;}
@@ -295,6 +155,58 @@ function calcularStats(){
     if(sb>=2)stats[j.b].vit++;
   });
   return stats;
+}
+
+function renderClassificacao(){
+  const stats=calcular();
+  const tb=document.getElementById("classificacao");
+  tb.innerHTML="";
+  Object.entries(stats)
+    .sort(([,a],[,b])=>b.sets-a.sets||b.saldo-a.saldo)
+    .forEach(([id,s],i)=>{
+      tb.innerHTML+=`
+      <tr class="${i<4?'classificado':''}">
+        <td>${i+1}</td>
+        <td>${isAdmin?`<input value="${nomesTimes[id]}" oninput="nomesTimes['${id}']=this.value;salvar();renderJogos()">`:nomesTimes[id]}</td>
+        <td>${s.j}</td><td>${s.sets}</td><td>${s.saldo}</td><td>${s.vit}</td>
+      </tr>`;
+    });
+}
+
+function renderJogos(){
+  const div=document.getElementById("jogos");
+  div.innerHTML="";
+  jogos.forEach((j,i)=>{
+    div.innerHTML+=`
+    <div class="jogo">
+      <div class="times"><span>${nomesTimes[j.a]}</span><span>${nomesTimes[j.b]}</span></div>
+      ${Object.entries(j.sets).map(([k,s])=>`
+        <div class="set">
+          ${k.toUpperCase()}
+          <div class="placar">
+            <input ${!isAdmin?"disabled":""} value="${s.a??""}" onchange="atualizar(${i},'${k}','a',this.value)">
+            x
+            <input ${!isAdmin?"disabled":""} value="${s.b??""}" onchange="atualizar(${i},'${k}','b',this.value)">
+          </div>
+        </div>`).join("")}
+    </div>`;
+  });
+}
+
+function render(){
+  renderClassificacao();
+  renderJogos();
+}
+
+async function iniciar(){
+  const snap=await REF.get();
+  if(snap.exists){
+    const d=snap.data();
+    nomesTimes=d.nomesTimes||nomesTimes;
+    jogos=Array.isArray(d.jogos)?d.jogos:[];
+  }
+  if(jogos.length===0){criarJogos();salvar();}
+  render();
 }
 
 iniciar();
