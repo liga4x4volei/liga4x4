@@ -10,7 +10,6 @@
   --vermelho:#c40000;
   --preto:#111;
   --branco:#fff;
-  --verde:#4CAF50;
 }
 *{box-sizing:border-box}
 body{
@@ -68,12 +67,11 @@ input.nome-time{
   display:flex;
   justify-content:space-around;
 }
-.set{
-  text-align:center;
-}
+.set{text-align:center}
 .set small{display:block;margin-bottom:4px}
 .placar{
   display:flex;
+  align-items:center;
   gap:6px;
 }
 input.placar-input{
@@ -120,15 +118,31 @@ input.placar-input{
 
 <button class="admin-btn" onclick="toggleAdmin()">ADMIN</button>
 
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
 <script>
+/* ================= FIREBASE ================= */
+const firebaseConfig = {
+  apiKey: "AIzaSyCovHcUFKP9dtwRxfnajhvGUgluCFp0HVQ",
+  authDomain: "liga4x4volei-71358.firebaseapp.com",
+  projectId: "liga4x4volei-71358",
+  storageBucket: "liga4x4volei-71358.firebasestorage.app",
+  messagingSenderId: "1053515939836",
+  appId: "1:1053515939836:web:922b96a35117d9d6a93c79"
+};
+
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+const REF = db.collection("liga4x4").doc("dados");
+
 /* ================= CONFIG ================= */
 const SENHA = "liga4x4";
 let isAdmin = false;
 
-/* ============ TIMES (ID FIXO) ============ */
+/* ============ TIMES ============ */
 const TIMES = Array.from({length:12},(_,i)=>`t${i+1}`);
-
-/* NOMES EDITÁVEIS */
 let nomesTimes = {};
 TIMES.forEach((id,i)=>nomesTimes[id]=`Time ${i+1}`);
 
@@ -189,9 +203,10 @@ function renderClassificacao(){
 
   if(isAdmin){
     document.querySelectorAll(".nome-time").forEach(inp=>{
-      inp.oninput = e=>{
+      inp.oninput = async e=>{
         nomesTimes[e.target.dataset.id] = e.target.value;
-        renderJogos(); // 🔥 ATUALIZA TODOS OS JOGOS
+        await REF.update({nomesTimes});
+        renderJogos();
       };
     });
   }
@@ -217,12 +232,12 @@ function renderJogos(){
             <div class="placar">
               <input class="placar-input" type="number"
                 ${isAdmin?"":"disabled"}
-                value="${j.sets[s][0]??""}"
+                value="${j.sets[s][0] ?? ""}"
                 onchange="atualizar(${i},${s},0,this.value)">
               <span>x</span>
               <input class="placar-input" type="number"
                 ${isAdmin?"":"disabled"}
-                value="${j.sets[s][1]??""}"
+                value="${j.sets[s][1] ?? ""}"
                 onchange="atualizar(${i},${s},1,this.value)">
             </div>
           </div>
@@ -234,36 +249,52 @@ function renderJogos(){
 }
 
 /* ================= LÓGICA ================= */
-function atualizar(i,s,t,v){
+async function atualizar(i,s,t,v){
   jogos[i].sets[s][t] = v===""?null:+v;
+  await REF.update({jogos});
   renderClassificacao();
 }
 
 function calcularStats(){
   const stats = {};
-  TIMES.forEach(id=>{
-    stats[id]={j:0,sets:0,saldo:0,vit:0};
-  });
+  TIMES.forEach(id=>stats[id]={j:0,sets:0,saldo:0,vit:0});
 
   jogos.forEach(j=>{
     let sa=0,sb=0,real=false;
     j.sets.forEach(s=>{
       if(s[0]!=null && s[1]!=null){
         real=true;
-        if(s[0]>s[1]){sa++;stats[j.a].sets++;stats[j.a].saldo++;stats[j.b].saldo--;}
-        else{sb++;stats[j.b].sets++;stats[j.b].saldo++;stats[j.a].saldo--;}
+        if(s[0]>s[1]){
+          sa++; stats[j.a].sets++; stats[j.a].saldo++; stats[j.b].saldo--;
+        }else{
+          sb++; stats[j.b].sets++; stats[j.b].saldo++; stats[j.a].saldo--;
+        }
       }
     });
     if(real){stats[j.a].j++;stats[j.b].j++;}
     if(sa>=2)stats[j.a].vit++;
     if(sb>=2)stats[j.b].vit++;
   });
-
   return stats;
 }
 
 /* ================= START ================= */
-render();
+async function iniciar(){
+  const snap = await REF.get();
+  if(snap.exists){
+    const data = snap.data();
+    nomesTimes = data.nomesTimes;
+    jogos = data.jogos;
+  }else{
+    await REF.set({
+      nomesTimes,
+      jogos,
+      timestamp: new Date().toISOString()
+    });
+  }
+  render();
+}
+iniciar();
 </script>
 
 </body>
