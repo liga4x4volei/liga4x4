@@ -13,6 +13,7 @@ body{
   padding:10px;
 }
 h1,h2{color:#fff;text-align:center}
+
 table{
   width:100%;
   background:#fff;
@@ -26,6 +27,18 @@ th,td{
 th{background:#111;color:#fff}
 .classificado{background:#c40000;color:#fff;font-weight:bold}
 
+.time-cell{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  justify-content:center;
+}
+.time-cell img{
+  width:26px;
+  height:26px;
+  object-fit:contain;
+}
+
 .jogos{
   display:grid;
   grid-template-columns:repeat(2,1fr);
@@ -37,15 +50,27 @@ th{background:#111;color:#fff}
   padding:12px;
   border-radius:10px;
 }
+.jogo h3{
+  margin:0 0 6px 0;
+  text-align:center;
+}
 .times{
   display:flex;
   justify-content:space-between;
   font-weight:bold;
   margin-bottom:8px;
 }
-.set{
-  text-align:center;
+.time{
+  display:flex;
+  align-items:center;
+  gap:6px;
 }
+.time img{
+  width:22px;
+  height:22px;
+}
+
+.set{text-align:center}
 .placar{
   display:flex;
   gap:5px;
@@ -55,6 +80,10 @@ input{
   width:45px;
   text-align:center;
 }
+input.logo{
+  width:100%;
+}
+
 button{
   position:fixed;
   bottom:15px;
@@ -96,10 +125,17 @@ firebase.initializeApp({
 const db = firebase.firestore();
 const REF = db.collection("liga4x4").doc("dados");
 
+/* ================= TIMES ================= */
 const TIMES = Array.from({length:12},(_,i)=>`t${i+1}`);
 let nomesTimes = {};
-TIMES.forEach((id,i)=>nomesTimes[id]=`Time ${i+1}`);
+let logosTimes = {};
 
+TIMES.forEach((id,i)=>{
+  nomesTimes[id]=`Time ${i+1}`;
+  logosTimes[id]="";
+});
+
+/* ================= JOGOS ================= */
 let jogos = [];
 let isAdmin = false;
 
@@ -120,6 +156,7 @@ function criarJogos(){
   }
 }
 
+/* ================= ADMIN ================= */
 function toggleAdmin(){
   if(prompt("Senha:")==="liga4x4"){
     isAdmin=!isAdmin;
@@ -127,10 +164,12 @@ function toggleAdmin(){
   }
 }
 
+/* ================= FIREBASE ================= */
 async function salvar(){
-  await REF.set({nomesTimes,jogos},{merge:true});
+  await REF.set({nomesTimes,logosTimes,jogos},{merge:true});
 }
 
+/* ================= LÓGICA ================= */
 function atualizar(j,s,t,v){
   jogos[j].sets[s][t]=v===""?null:+v;
   salvar();
@@ -157,6 +196,7 @@ function calcular(){
   return stats;
 }
 
+/* ================= RENDER ================= */
 function renderClassificacao(){
   const stats=calcular();
   const tb=document.getElementById("classificacao");
@@ -167,7 +207,20 @@ function renderClassificacao(){
       tb.innerHTML+=`
       <tr class="${i<4?'classificado':''}">
         <td>${i+1}</td>
-        <td>${isAdmin?`<input value="${nomesTimes[id]}" oninput="nomesTimes['${id}']=this.value;salvar();renderJogos()">`:nomesTimes[id]}</td>
+        <td>
+          <div class="time-cell">
+            ${logosTimes[id]?`<img src="${logosTimes[id]}">`:``}
+            ${isAdmin
+              ? `<div>
+                   <input value="${nomesTimes[id]}" 
+                     oninput="nomesTimes['${id}']=this.value;salvar();renderJogos()">
+                   <input class="logo" placeholder="URL do logo"
+                     value="${logosTimes[id]}"
+                     oninput="logosTimes['${id}']=this.value;salvar();render()">
+                 </div>`
+              : nomesTimes[id]}
+          </div>
+        </td>
         <td>${s.j}</td><td>${s.sets}</td><td>${s.saldo}</td><td>${s.vit}</td>
       </tr>`;
     });
@@ -179,14 +232,26 @@ function renderJogos(){
   jogos.forEach((j,i)=>{
     div.innerHTML+=`
     <div class="jogo">
-      <div class="times"><span>${nomesTimes[j.a]}</span><span>${nomesTimes[j.b]}</span></div>
+      <h3>Jogo ${i+1}</h3>
+      <div class="times">
+        <div class="time">
+          ${logosTimes[j.a]?`<img src="${logosTimes[j.a]}">`:``}
+          ${nomesTimes[j.a]}
+        </div>
+        <div class="time">
+          ${logosTimes[j.b]?`<img src="${logosTimes[j.b]}">`:``}
+          ${nomesTimes[j.b]}
+        </div>
+      </div>
       ${Object.entries(j.sets).map(([k,s])=>`
         <div class="set">
           ${k.toUpperCase()}
           <div class="placar">
-            <input ${!isAdmin?"disabled":""} value="${s.a??""}" onchange="atualizar(${i},'${k}','a',this.value)">
+            <input ${!isAdmin?"disabled":""} value="${s.a??""}"
+              onchange="atualizar(${i},'${k}','a',this.value)">
             x
-            <input ${!isAdmin?"disabled":""} value="${s.b??""}" onchange="atualizar(${i},'${k}','b',this.value)">
+            <input ${!isAdmin?"disabled":""} value="${s.b??""}"
+              onchange="atualizar(${i},'${k}','b',this.value)">
           </div>
         </div>`).join("")}
     </div>`;
@@ -198,11 +263,13 @@ function render(){
   renderJogos();
 }
 
+/* ================= START ================= */
 async function iniciar(){
   const snap=await REF.get();
   if(snap.exists){
     const d=snap.data();
     nomesTimes=d.nomesTimes||nomesTimes;
+    logosTimes=d.logosTimes||logosTimes;
     jogos=Array.isArray(d.jogos)?d.jogos:[];
   }
   if(jogos.length===0){criarJogos();salvar();}
