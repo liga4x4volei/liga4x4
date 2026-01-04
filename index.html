@@ -12,15 +12,15 @@
   overflow:hidden;
   background:#111;
   border-radius:8px;
-  margin:10px 0 20px;
+  margin:10px 0 15px;
 }
 
 .ticker-track{
   display:flex;
-  gap:25px;
+  gap:50px;
   padding:12px 0;
   width:max-content;
-  animation: tickerMove 30s linear infinite;
+  animation:tickerMove 20s linear infinite;
 }
 
 .ticker-track span{
@@ -31,12 +31,12 @@
 }
 
 @keyframes tickerMove{
-  from{
-    transform:translateX(100%);
-  }
-  to{
-    transform:translateX(-100%);
-  }
+  from{transform:translateX(0)}
+  to{transform:translateX(-50%)}
+}
+
+.ticker:hover .ticker-track{
+  animation-play-state:paused;
 }
 
 /* Mobile */
@@ -187,6 +187,9 @@ button{
 
 <div class="ticker">
   <div class="ticker-track">
+    <span>📅 05/01 – 20h | Arena Belém | Time 1 x Time 2</span>
+    <span>📅 07/01 – 19h | Arena Belém | Time 3 x Time 4</span>
+    <span>📅 10/01 – 21h | Ginásio Central | Time 5 x Time 6</span>
     <span>📅 05/01 – 20h | Arena Belém | Time 1 x Time 2</span>
     <span>📅 07/01 – 19h | Arena Belém | Time 3 x Time 4</span>
     <span>📅 10/01 – 21h | Ginásio Central | Time 5 x Time 6</span>
@@ -379,4 +382,5 @@ iniciar();
 
 </body>
 </html>
+
 
