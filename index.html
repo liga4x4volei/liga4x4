@@ -7,14 +7,36 @@
 
 <style>
 
-/* ================= PRÓXIMOS JOGOS (CARDS) ================= */
+/* ================= BANNER DA LIGA ================= */
+.banner-liga{
+  width:100%;
+  display:flex;
+  justify-content:center;
+  margin:10px 0 6px;
+}
+.banner-liga img{
+  max-width:100%;
+  height:auto;
+  border-radius:14px;
+  box-shadow:0 4px 12px rgba(0,0,0,.35);
+}
+
+/* ================= TÍTULO PEQUENO ================= */
+.titulo-liga{
+  color:#fff;
+  text-align:center;
+  font-size:22px;
+  margin:6px 0 15px;
+  font-weight:bold;
+}
+
+/* ================= PRÓXIMOS JOGOS ================= */
 .proximos-jogos{
   display:grid;
   grid-template-columns:repeat(2,1fr);
   gap:15px;
   margin:15px 0 10px;
 }
-
 .proximo-card{
   background:#fff;
   border-left:6px solid #c40000;
@@ -22,31 +44,17 @@
   border-radius:10px;
   box-shadow:0 2px 6px rgba(0,0,0,.2);
 }
-
-.proximo-card h3{
-  margin:0 0 8px;
-  color:#111;
-  font-size:16px;
-}
-
-.proximo-card p{
-  margin:4px 0;
-  font-size:14px;
-}
-
+.proximo-card h3{margin:0 0 8px;color:#111;font-size:16px}
+.proximo-card p{margin:4px 0;font-size:14px}
 .proximo-card .confronto{
   margin-top:8px;
   font-size:18px;
   font-weight:bold;
   text-align:center;
 }
+.proximo-card .confronto span{margin:0 6px;color:#c40000}
 
-.proximo-card .confronto span{
-  margin:0 6px;
-  color:#c40000;
-}
-
-/* ================= TICKER ANIMADO ================= */
+/* ================= TICKER ================= */
 .ticker{
   width:100%;
   overflow:hidden;
@@ -54,85 +62,33 @@
   border-radius:8px;
   margin:10px 0 25px;
 }
-
-.ticker-track{
-  display:flex;
-  gap:60px;
-  padding:12px 0;
-  width:max-content;
-  animation:tickerMove 22s linear infinite;
-}
-
-.ticker-track span{
-  color:#fff;
-  font-weight:bold;
-  white-space:nowrap;
-  font-size:16px;
-}
-
-@keyframes tickerMove{
-  from{ transform:translateX(0); }
-  to{ transform:translateX(-50%); }
-}
-
-.ticker:hover .ticker-track{
-  animation-play-state:paused;
-}
-
-/* MOBILE */
-@media(max-width:700px){
-  .proximos-jogos{
-    grid-template-columns:1fr;
-  }
-}
-
-
-.ticker{
-  width:100%;
-  overflow:hidden;
-  background:#111;
-  border-radius:8px;
-  margin:10px 0 20px;
-}
-
 .ticker-track{
   display:flex;
   gap:50px;
   padding:12px 0;
   width:max-content;
-  animation: tickerMove 20s linear infinite;
+  animation:tickerMove 20s linear infinite;
 }
-
 .ticker-track span{
   color:#fff;
   font-weight:bold;
   white-space:nowrap;
   font-size:16px;
 }
-
 @keyframes tickerMove{
-  from{
-    transform:translateX(100%);
-  }
-  to{
-    transform:translateX(-100%);
-  }
+  from{transform:translateX(100%)}
+  to{transform:translateX(-100%)}
 }
+.ticker:hover .ticker-track{animation-play-state:paused}
 
-/* Mobile */
-@media(max-width:700px){
-  .ticker-track span{
-    font-size:14px;
-  }
-}
-
+/* ================= GERAL ================= */
 body{
   font-family:Arial,sans-serif;
   background:linear-gradient(90deg,#004aad,#8ba9d1);
   margin:0;
   padding:10px;
 }
-h1,h2{color:#fff;text-align:center}
+h2{color:#fff;text-align:center}
 
 table{
   width:100%;
@@ -170,10 +126,7 @@ th{background:#111;color:#fff}
   padding:12px;
   border-radius:10px;
 }
-.jogo h3{
-  margin:0 0 6px 0;
-  text-align:center;
-}
+.jogo h3{text-align:center;margin:0 0 6px}
 .times{
   display:flex;
   justify-content:space-between;
@@ -185,10 +138,7 @@ th{background:#111;color:#fff}
   align-items:center;
   gap:6px;
 }
-.time img{
-  width:36px;
-  height:36px;
-}
+.time img{width:36px;height:36px}
 
 .set{text-align:center}
 .placar{
@@ -196,13 +146,8 @@ th{background:#111;color:#fff}
   gap:5px;
   justify-content:center;
 }
-input{
-  width:45px;
-  text-align:center;
-}
-input.logo{
-  width:100%;
-}
+input{width:45px;text-align:center}
+input.logo{width:100%}
 
 button{
   position:fixed;
@@ -211,49 +156,12 @@ button{
   padding:12px 18px;
 }
 
-.proximos-jogos{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:15px;
-  margin:15px 0 25px;
-}
-
-.proximo-card{
-  background:#fff;
-  border-left:6px solid #c40000;
-  padding:12px 15px;
-  border-radius:10px;
-  box-shadow:0 2px 6px rgba(0,0,0,.2);
-}
-
-.proximo-card h3{
-  margin:0 0 8px;
-  color:#111;
-  font-size:16px;
-}
-
-.proximo-card p{
-  margin:4px 0;
-  font-size:14px;
-}
-
-.proximo-card .confronto{
-  margin-top:8px;
-  font-size:18px;
-  font-weight:bold;
-  text-align:center;
-}
-
-.proximo-card .confronto span{
-  margin:0 6px;
-  color:#c40000;
-}
-
-/* MOBILE */
+/* ================= MOBILE ================= */
 @media(max-width:700px){
-  .proximos-jogos{
-    grid-template-columns:1fr;
-  }
+  .proximos-jogos{grid-template-columns:1fr}
+  .banner-liga img{max-height:160px;object-fit:contain}
+  .titulo-liga{font-size:18px}
+  .ticker-track span{font-size:14px}
 }
 
 </style>
@@ -261,15 +169,19 @@ button{
 
 <body>
 
-<h1>🏐 Liga 4x4 Vôlei Misto</h1>
+<!-- BANNER + TÍTULO -->
+<div class="banner-liga">
+  <img src="bannerliga.png" alt="Liga 4x4 Vôlei Misto">
+</div>
+<h1 class="titulo-liga">🏐 Liga 4x4 Vôlei Misto</h1>
 
+<!-- PRÓXIMOS JOGOS -->
 <div class="proximos-jogos">
-
   <div class="proximo-card">
     <h3>🔜 Próximo Jogo</h3>
-    <p><strong>📅 Data:</strong> 07 de janeiro – 20h</p>
+    <p><strong>📅 Data:</strong> 05 de janeiro – 20h</p>
     <p><strong>📍 Local:</strong> Arena Belém</p>
-    <p class="confronto">Watchatchara <span>x</span> RGS</p>
+    <p class="confronto">Time 1 <span>x</span> Time 2</p>
   </div>
 
   <div class="proximo-card">
@@ -278,22 +190,16 @@ button{
     <p><strong>📍 Local:</strong> Arena Belém</p>
     <p class="confronto">Time 3 <span>x</span> Time 4</p>
   </div>
-
 </div>
 
-
+<!-- TICKER -->
 <div class="ticker">
   <div class="ticker-track">
-    <span>📅 Avisos✅ </span>
-    <span>📅 Avisos✅ </span>
-    <span>📅 Avisos✅ </span>
-    <span>📅 Avisos✅ </span>
-    <span>📅 07/01 – 19h | Arena Belém | Watchatchara X RGS  </span>
-    
+    <span>📅 05/01 – 20h | Arena Belém | Time 1 x Time 2</span>
+    <span>📅 07/01 – 19h | Arena Belém | Time 3 x Time 4</span>
+    <span>📅 10/01 – 21h | Ginásio Central | Time 5 x Time 6</span>
   </div>
 </div>
-
-
 
 <h2>🏆 Classificação</h2>
 <table>
@@ -323,65 +229,43 @@ firebase.initializeApp({
 const db = firebase.firestore();
 const REF = db.collection("liga4x4").doc("dados");
 
-/* ================= TIMES ================= */
 const TIMES = Array.from({length:12},(_,i)=>`t${i+1}`);
-let nomesTimes = {};
-let logosTimes = {};
+let nomesTimes={},logosTimes={},jogos=[],isAdmin=false;
 
-TIMES.forEach((id,i)=>{
-  nomesTimes[id]=`Time ${i+1}`;
-  logosTimes[id]="";
-});
-
-/* ================= JOGOS ================= */
-let jogos = [];
-let isAdmin = false;
+TIMES.forEach((id,i)=>{nomesTimes[id]=`Time ${i+1}`;logosTimes[id]=""});
 
 function criarJogos(){
   jogos=[];
   for(let i=0;i<TIMES.length;i++){
     for(let j=i+1;j<TIMES.length;j++){
       jogos.push({
-        a:TIMES[i],
-        b:TIMES[j],
-        sets:{
-          s1:{a:null,b:null},
-          s2:{a:null,b:null},
-          s3:{a:null,b:null}
-        }
+        a:TIMES[i],b:TIMES[j],
+        sets:{s1:{a:null,b:null},s2:{a:null,b:null},s3:{a:null,b:null}}
       });
     }
   }
 }
 
-/* ================= ADMIN ================= */
 function toggleAdmin(){
-  if(prompt("Senha:")==="liga4x4"){
-    isAdmin=!isAdmin;
-    render();
-  }
+  if(prompt("Senha:")==="liga4x4"){isAdmin=!isAdmin;render();}
 }
 
-/* ================= FIREBASE ================= */
 async function salvar(){
   await REF.set({nomesTimes,logosTimes,jogos},{merge:true});
 }
 
-/* ================= LÓGICA ================= */
 function atualizar(j,s,t,v){
   jogos[j].sets[s][t]=v===""?null:+v;
-  salvar();
-  renderClassificacao();
+  salvar();renderClassificacao();
 }
 
 function calcular(){
   const stats={};
   TIMES.forEach(t=>stats[t]={j:0,sets:0,saldo:0,vit:0});
-
   jogos.forEach(j=>{
     let sa=0,sb=0,real=false;
     Object.values(j.sets).forEach(s=>{
-      if(s.a!=null && s.b!=null){
+      if(s.a!=null&&s.b!=null){
         real=true;
         if(s.a>s.b){sa++;stats[j.a].sets++;stats[j.a].saldo++;stats[j.b].saldo--;}
         else{sb++;stats[j.b].sets++;stats[j.b].saldo++;stats[j.a].saldo--;}
@@ -394,7 +278,6 @@ function calcular(){
   return stats;
 }
 
-/* ================= RENDER ================= */
 function renderClassificacao(){
   const stats=calcular();
   const tb=document.getElementById("classificacao");
@@ -408,15 +291,11 @@ function renderClassificacao(){
         <td>
           <div class="time-cell">
             ${logosTimes[id]?`<img src="${logosTimes[id]}">`:``}
-            ${isAdmin
-              ? `<div>
-                   <input value="${nomesTimes[id]}" 
-                     oninput="nomesTimes['${id}']=this.value;salvar();renderJogos()">
-                   <input class="logo" placeholder="URL do logo"
-                     value="${logosTimes[id]}"
-                     oninput="logosTimes['${id}']=this.value;salvar();render()">
-                 </div>`
-              : nomesTimes[id]}
+            ${isAdmin?`<div>
+              <input value="${nomesTimes[id]}" oninput="nomesTimes['${id}']=this.value;salvar();renderJogos()">
+              <input class="logo" value="${logosTimes[id]}" placeholder="URL do logo"
+                oninput="logosTimes['${id}']=this.value;salvar();render()">
+            </div>`:nomesTimes[id]}
           </div>
         </td>
         <td>${s.j}</td><td>${s.sets}</td><td>${s.saldo}</td><td>${s.vit}</td>
@@ -432,36 +311,24 @@ function renderJogos(){
     <div class="jogo">
       <h3>Jogo ${i+1}</h3>
       <div class="times">
-        <div class="time">
-          ${logosTimes[j.a]?`<img src="${logosTimes[j.a]}">`:``}
-          ${nomesTimes[j.a]}
-        </div>
-        <div class="time">
-          ${logosTimes[j.b]?`<img src="${logosTimes[j.b]}">`:``}
-          ${nomesTimes[j.b]}
-        </div>
+        <div class="time">${nomesTimes[j.a]}</div>
+        <div class="time">${nomesTimes[j.b]}</div>
       </div>
       ${Object.entries(j.sets).map(([k,s])=>`
-        <div class="set">
-          ${k.toUpperCase()}
-          <div class="placar">
-            <input ${!isAdmin?"disabled":""} value="${s.a??""}"
-              onchange="atualizar(${i},'${k}','a',this.value)">
-            x
-            <input ${!isAdmin?"disabled":""} value="${s.b??""}"
-              onchange="atualizar(${i},'${k}','b',this.value)">
-          </div>
-        </div>`).join("")}
+      <div class="set">${k.toUpperCase()}
+        <div class="placar">
+          <input ${!isAdmin?"disabled":""} value="${s.a??""}"
+            onchange="atualizar(${i},'${k}','a',this.value)"> x
+          <input ${!isAdmin?"disabled":""} value="${s.b??""}"
+            onchange="atualizar(${i},'${k}','b',this.value)">
+        </div>
+      </div>`).join("")}
     </div>`;
   });
 }
 
-function render(){
-  renderClassificacao();
-  renderJogos();
-}
+function render(){renderClassificacao();renderJogos();}
 
-/* ================= START ================= */
 async function iniciar(){
   const snap=await REF.get();
   if(snap.exists){
@@ -473,16 +340,8 @@ async function iniciar(){
   if(jogos.length===0){criarJogos();salvar();}
   render();
 }
-
 iniciar();
 </script>
 
 </body>
 </html>
-
-
-
-
-
-
-
