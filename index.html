@@ -14,6 +14,32 @@ body{
 }
 h1,h2{color:#fff;text-align:center}
 
+.proximos-jogos{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:15px;
+  margin:15px 0 25px;
+}
+.proximo-card{
+  background:#fff;
+  border-left:6px solid #c40000;
+  padding:12px;
+  border-radius:10px;
+}
+.confronto{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  font-size:18px;
+  font-weight:bold;
+}
+.confronto img{
+  width:32px;
+  height:32px;
+  object-fit:contain;
+}
+
 table{
   width:100%;
   background:#fff;
@@ -33,56 +59,33 @@ th{background:#111;color:#fff}
   gap:6px;
   justify-content:center;
 }
-.time-cell img{
-  width:42px;
-  height:42px;
-  object-fit:contain;
-}
+.time-cell img{width:36px;height:36px}
 
 .jogos{
   display:grid;
   grid-template-columns:repeat(2,1fr);
   gap:12px;
-  margin-top:15px;
 }
 .jogo{
   background:#fff;
   padding:12px;
   border-radius:10px;
 }
-.jogo h3{
-  margin:0 0 6px 0;
-  text-align:center;
-}
 .times{
   display:flex;
   justify-content:space-between;
   font-weight:bold;
-  margin-bottom:8px;
 }
 .time{
   display:flex;
   align-items:center;
   gap:6px;
 }
-.time img{
-  width:36px;
-  height:36px;
-}
+.time img{width:30px;height:30px}
 
 .set{text-align:center}
-.placar{
-  display:flex;
-  gap:5px;
-  justify-content:center;
-}
-input{
-  width:45px;
-  text-align:center;
-}
-input.logo{
-  width:100%;
-}
+.placar{display:flex;gap:5px;justify-content:center}
+input{width:45px;text-align:center}
 
 button{
   position:fixed;
@@ -90,52 +93,9 @@ button{
   right:15px;
   padding:12px 18px;
 }
-
-.proximos-jogos{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:15px;
-  margin:15px 0 25px;
-}
-
-.proximo-card{
-  background:#fff;
-  border-left:6px solid #c40000;
-  padding:12px 15px;
-  border-radius:10px;
-  box-shadow:0 2px 6px rgba(0,0,0,.2);
-}
-
-.proximo-card h3{
-  margin:0 0 8px;
-  color:#111;
-  font-size:16px;
-}
-
-.proximo-card p{
-  margin:4px 0;
-  font-size:14px;
-}
-
-.proximo-card .confronto{
-  margin-top:8px;
-  font-size:18px;
-  font-weight:bold;
-  text-align:center;
-}
-
-.proximo-card .confronto span{
-  margin:0 6px;
-  color:#c40000;
-}
-
-/* MOBILE */
 @media(max-width:700px){
-  .proximos-jogos{
-    grid-template-columns:1fr;
-  }
+  .proximos-jogos,.jogos{grid-template-columns:1fr}
 }
-
 </style>
 </head>
 
@@ -143,31 +103,12 @@ button{
 
 <h1>🏐 Liga 4x4</h1>
 
-<div class="proximos-jogos">
-
-  <div class="proximo-card">
-    <h3>🔜 Próximo Jogo</h3>
-    <p><strong>📅 Data:</strong> 05 de janeiro – 20h</p>
-    <p><strong>📍 Local:</strong> Arena Belém</p>
-    <p class="confronto">Time 1 <span>x</span> Time 2</p>
-  </div>
-
-  <div class="proximo-card">
-    <h3>⏭️ Jogo Seguinte</h3>
-    <p><strong>📅 Data:</strong> 07 de janeiro – 19h</p>
-    <p><strong>📍 Local:</strong> Arena Belém</p>
-    <p class="confronto">Time 3 <span>x</span> Time 4</p>
-  </div>
-
-</div>
-
+<div class="proximos-jogos" id="proximos"></div>
 
 <h2>🏆 Classificação</h2>
 <table>
 <thead>
-<tr>
-<th>Pos</th><th>Time</th><th>J</th><th>Sets+</th><th>Saldo</th><th>Vit</th>
-</tr>
+<tr><th>Pos</th><th>Time</th><th>J</th><th>Sets+</th><th>Saldo</th><th>Vit</th></tr>
 </thead>
 <tbody id="classificacao"></tbody>
 </table>
@@ -186,161 +127,114 @@ firebase.initializeApp({
   authDomain: "liga4x4volei-71358.firebaseapp.com",
   projectId: "liga4x4volei-71358"
 });
+const db=firebase.firestore();
+const REF=db.collection("liga4x4").doc("dados");
 
-const db = firebase.firestore();
-const REF = db.collection("liga4x4").doc("dados");
+const TIMES=[...Array(12)].map((_,i)=>`t${i+1}`);
+let nomesTimes={},logosTimes={},jogos=[],isAdmin=false;
 
-/* ================= TIMES ================= */
-const TIMES = Array.from({length:12},(_,i)=>`t${i+1}`);
-let nomesTimes = {};
-let logosTimes = {};
+let proximosJogos={
+  p1:{data:"",local:"",a:"t1",b:"t2"},
+  p2:{data:"",local:"",a:"t3",b:"t4"}
+};
 
-TIMES.forEach((id,i)=>{
-  nomesTimes[id]=`Time ${i+1}`;
-  logosTimes[id]="";
+TIMES.forEach((t,i)=>{
+  nomesTimes[t]=`Time ${i+1}`;
+  logosTimes[t]="";
 });
 
-/* ================= JOGOS ================= */
-let jogos = [];
-let isAdmin = false;
+function toggleAdmin(){
+  if(prompt("Senha:")==="liga4x4"){isAdmin=!isAdmin;render();}
+}
 
 function criarJogos(){
   jogos=[];
-  for(let i=0;i<TIMES.length;i++){
-    for(let j=i+1;j<TIMES.length;j++){
-      jogos.push({
-        a:TIMES[i],
-        b:TIMES[j],
-        sets:{
-          s1:{a:null,b:null},
-          s2:{a:null,b:null},
-          s3:{a:null,b:null}
-        }
-      });
-    }
-  }
+  for(let i=0;i<TIMES.length;i++)
+    for(let j=i+1;j<TIMES.length;j++)
+      jogos.push({a:TIMES[i],b:TIMES[j],sets:{s1:{a:null,b:null},s2:{a:null,b:null},s3:{a:null,b:null}}});
 }
 
-/* ================= ADMIN ================= */
-function toggleAdmin(){
-  if(prompt("Senha:")==="liga4x4"){
-    isAdmin=!isAdmin;
-    render();
-  }
-}
-
-/* ================= FIREBASE ================= */
 async function salvar(){
-  await REF.set({nomesTimes,logosTimes,jogos},{merge:true});
+  await REF.set({nomesTimes,logosTimes,jogos,proximosJogos},{merge:true});
 }
 
-/* ================= LÓGICA ================= */
-function atualizar(j,s,t,v){
-  jogos[j].sets[s][t]=v===""?null:+v;
-  salvar();
-  renderClassificacao();
-}
-
-function calcular(){
-  const stats={};
-  TIMES.forEach(t=>stats[t]={j:0,sets:0,saldo:0,vit:0});
-
-  jogos.forEach(j=>{
-    let sa=0,sb=0,real=false;
-    Object.values(j.sets).forEach(s=>{
-      if(s.a!=null && s.b!=null){
-        real=true;
-        if(s.a>s.b){sa++;stats[j.a].sets++;stats[j.a].saldo++;stats[j.b].saldo--;}
-        else{sb++;stats[j.b].sets++;stats[j.b].saldo++;stats[j.a].saldo--;}
-      }
-    });
-    if(real){stats[j.a].j++;stats[j.b].j++;}
-    if(sa>=2)stats[j.a].vit++;
-    if(sb>=2)stats[j.b].vit++;
-  });
-  return stats;
-}
-
-/* ================= RENDER ================= */
-function renderClassificacao(){
-  const stats=calcular();
-  const tb=document.getElementById("classificacao");
-  tb.innerHTML="";
-  Object.entries(stats)
-    .sort(([,a],[,b])=>b.sets-a.sets||b.saldo-a.saldo)
-    .forEach(([id,s],i)=>{
-      tb.innerHTML+=`
-      <tr class="${i<4?'classificado':''}">
-        <td>${i+1}</td>
-        <td>
-          <div class="time-cell">
-            ${logosTimes[id]?`<img src="${logosTimes[id]}">`:``}
-            ${isAdmin
-              ? `<div>
-                   <input value="${nomesTimes[id]}" 
-                     oninput="nomesTimes['${id}']=this.value;salvar();renderJogos()">
-                   <input class="logo" placeholder="URL do logo"
-                     value="${logosTimes[id]}"
-                     oninput="logosTimes['${id}']=this.value;salvar();render()">
-                 </div>`
-              : nomesTimes[id]}
-          </div>
-        </td>
-        <td>${s.j}</td><td>${s.sets}</td><td>${s.saldo}</td><td>${s.vit}</td>
-      </tr>`;
-    });
-}
-
-function renderJogos(){
-  const div=document.getElementById("jogos");
+function renderProximos(){
+  const div=document.getElementById("proximos");
   div.innerHTML="";
-  jogos.forEach((j,i)=>{
+  Object.entries(proximosJogos).forEach(([k,p],i)=>{
     div.innerHTML+=`
-    <div class="jogo">
-      <h3>Jogo ${i+1}</h3>
-      <div class="times">
-        <div class="time">
-          ${logosTimes[j.a]?`<img src="${logosTimes[j.a]}">`:``}
-          ${nomesTimes[j.a]}
-        </div>
-        <div class="time">
-          ${logosTimes[j.b]?`<img src="${logosTimes[j.b]}">`:``}
-          ${nomesTimes[j.b]}
-        </div>
+    <div class="proximo-card">
+      <h3>${i==0?"🔜 Próximo Jogo":"⏭️ Jogo Seguinte"}</h3>
+      ${isAdmin?`
+        <input placeholder="Data" value="${p.data}" oninput="proximosJogos.${k}.data=this.value;salvar()">
+        <input placeholder="Local" value="${p.local}" oninput="proximosJogos.${k}.local=this.value;salvar()">
+      `:`<p><strong>${p.data}</strong><br>${p.local}</p>`}
+      <div class="confronto">
+        ${logosTimes[p.a]?`<img src="${logosTimes[p.a]}">`:``}
+        ${nomesTimes[p.a]}
+        x
+        ${nomesTimes[p.b]}
+        ${logosTimes[p.b]?`<img src="${logosTimes[p.b]}">`:``}
       </div>
-      ${Object.entries(j.sets).map(([k,s])=>`
-        <div class="set">
-          ${k.toUpperCase()}
-          <div class="placar">
-            <input ${!isAdmin?"disabled":""} value="${s.a??""}"
-              onchange="atualizar(${i},'${k}','a',this.value)">
-            x
-            <input ${!isAdmin?"disabled":""} value="${s.b??""}"
-              onchange="atualizar(${i},'${k}','b',this.value)">
-          </div>
-        </div>`).join("")}
     </div>`;
   });
 }
 
+function renderClassificacao(){
+  const stats={};
+  TIMES.forEach(t=>stats[t]={j:0,sets:0,saldo:0,vit:0});
+  jogos.forEach(j=>{
+    let sa=0,sb=0,r=false;
+    Object.values(j.sets).forEach(s=>{
+      if(s.a!=null&&s.b!=null){
+        r=true;
+        if(s.a>s.b){sa++;stats[j.a].sets++;stats[j.a].saldo++;stats[j.b].saldo--;}
+        else{sb++;stats[j.b].sets++;stats[j.b].saldo++;stats[j.a].saldo--;}
+      }
+    });
+    if(r){stats[j.a].j++;stats[j.b].j++;}
+    if(sa>=2)stats[j.a].vit++;
+    if(sb>=2)stats[j.b].vit++;
+  });
+  document.getElementById("classificacao").innerHTML=
+    Object.entries(stats).sort(([,a],[,b])=>b.sets-a.sets||b.saldo-a.saldo)
+    .map(([id,s],i)=>`
+      <tr class="${i<4?'classificado':''}">
+        <td>${i+1}</td>
+        <td class="time-cell">${logosTimes[id]?`<img src="${logosTimes[id]}">`:``}${nomesTimes[id]}</td>
+        <td>${s.j}</td><td>${s.sets}</td><td>${s.saldo}</td><td>${s.vit}</td>
+      </tr>`).join("");
+}
+
+function renderJogos(){
+  document.getElementById("jogos").innerHTML=jogos.map((j,i)=>`
+    <div class="jogo">
+      <h3>Jogo ${i+1}</h3>
+      <div class="times">
+        <div class="time">${logosTimes[j.a]?`<img src="${logosTimes[j.a]}">`:``}${nomesTimes[j.a]}</div>
+        <div class="time">${logosTimes[j.b]?`<img src="${logosTimes[j.b]}">`:``}${nomesTimes[j.b]}</div>
+      </div>
+    </div>`).join("");
+}
+
 function render(){
+  renderProximos();
   renderClassificacao();
   renderJogos();
 }
 
-/* ================= START ================= */
 async function iniciar(){
-  const snap=await REF.get();
-  if(snap.exists){
-    const d=snap.data();
+  const s=await REF.get();
+  if(s.exists){
+    const d=s.data();
     nomesTimes=d.nomesTimes||nomesTimes;
     logosTimes=d.logosTimes||logosTimes;
-    jogos=Array.isArray(d.jogos)?d.jogos:[];
+    jogos=d.jogos||[];
+    proximosJogos=d.proximosJogos||proximosJogos;
   }
-  if(jogos.length===0){criarJogos();salvar();}
+  if(!jogos.length){criarJogos();salvar();}
   render();
 }
-
 iniciar();
 </script>
 
