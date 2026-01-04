@@ -7,20 +7,60 @@
 
 <style>
 
+/* ================= PRÓXIMOS JOGOS (CARDS) ================= */
+.proximos-jogos{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:15px;
+  margin:15px 0 10px;
+}
+
+.proximo-card{
+  background:#fff;
+  border-left:6px solid #c40000;
+  padding:12px 15px;
+  border-radius:10px;
+  box-shadow:0 2px 6px rgba(0,0,0,.2);
+}
+
+.proximo-card h3{
+  margin:0 0 8px;
+  color:#111;
+  font-size:16px;
+}
+
+.proximo-card p{
+  margin:4px 0;
+  font-size:14px;
+}
+
+.proximo-card .confronto{
+  margin-top:8px;
+  font-size:18px;
+  font-weight:bold;
+  text-align:center;
+}
+
+.proximo-card .confronto span{
+  margin:0 6px;
+  color:#c40000;
+}
+
+/* ================= TICKER ANIMADO ================= */
 .ticker{
   width:100%;
   overflow:hidden;
   background:#111;
   border-radius:8px;
-  margin:10px 0 15px;
+  margin:10px 0 25px;
 }
 
 .ticker-track{
   display:flex;
-  gap:50px;
+  gap:60px;
   padding:12px 0;
   width:max-content;
-  animation:tickerMove 20s linear infinite;
+  animation:tickerMove 22s linear infinite;
 }
 
 .ticker-track span{
@@ -31,12 +71,52 @@
 }
 
 @keyframes tickerMove{
-  from{transform:translateX(0)}
-  to{transform:translateX(-50%)}
+  from{ transform:translateX(0); }
+  to{ transform:translateX(-50%); }
 }
 
 .ticker:hover .ticker-track{
   animation-play-state:paused;
+}
+
+/* MOBILE */
+@media(max-width:700px){
+  .proximos-jogos{
+    grid-template-columns:1fr;
+  }
+}
+
+
+.ticker{
+  width:100%;
+  overflow:hidden;
+  background:#111;
+  border-radius:8px;
+  margin:10px 0 20px;
+}
+
+.ticker-track{
+  display:flex;
+  gap:50px;
+  padding:12px 0;
+  width:max-content;
+  animation: tickerMove 20s linear infinite;
+}
+
+.ticker-track span{
+  color:#fff;
+  font-weight:bold;
+  white-space:nowrap;
+  font-size:16px;
+}
+
+@keyframes tickerMove{
+  from{
+    transform:translateX(100%);
+  }
+  to{
+    transform:translateX(-100%);
+  }
 }
 
 /* Mobile */
@@ -183,13 +263,27 @@ button{
 
 <h1>🏐 Liga 4x4</h1>
 
-<h1>🏐 Liga 4x4</h1>
+<div class="proximos-jogos">
+
+  <div class="proximo-card">
+    <h3>🔜 Próximo Jogo</h3>
+    <p><strong>📅 Data:</strong> 05 de janeiro – 20h</p>
+    <p><strong>📍 Local:</strong> Arena Belém</p>
+    <p class="confronto">Time 1 <span>x</span> Time 2</p>
+  </div>
+
+  <div class="proximo-card">
+    <h3>⏭️ Jogo Seguinte</h3>
+    <p><strong>📅 Data:</strong> 07 de janeiro – 19h</p>
+    <p><strong>📍 Local:</strong> Arena Belém</p>
+    <p class="confronto">Time 3 <span>x</span> Time 4</p>
+  </div>
+
+</div>
+
 
 <div class="ticker">
   <div class="ticker-track">
-    <span>📅 05/01 – 20h | Arena Belém | Time 1 x Time 2</span>
-    <span>📅 07/01 – 19h | Arena Belém | Time 3 x Time 4</span>
-    <span>📅 10/01 – 21h | Ginásio Central | Time 5 x Time 6</span>
     <span>📅 05/01 – 20h | Arena Belém | Time 1 x Time 2</span>
     <span>📅 07/01 – 19h | Arena Belém | Time 3 x Time 4</span>
     <span>📅 10/01 – 21h | Ginásio Central | Time 5 x Time 6</span>
@@ -382,5 +476,3 @@ iniciar();
 
 </body>
 </html>
-
-
