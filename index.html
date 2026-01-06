@@ -1,389 +1,347 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🏐 Liga 4x4 – Classificação e Jogos</title>
 
-<!-- ======== ESTILO ESPORTIVO AZUL DEGRADÊ ======== -->
 <style>
-:root {
-  --azul-escuro: #004aad;
-  --azul-claro: #89c4ff;
-  --secundaria: #ff4040;
-  --branco: #ffffff;
-  --texto: #1a1a1a;
-  --sombra: rgba(0, 0, 0, 0.1);
+
+/* ================= BANNER DA LIGA ================= */
+.banner-liga{
+  width:100%;
+  display:flex;
+  justify-content:center;
+  margin:10px 0 6px;
+}
+.banner-liga img{
+  max-width:100%;
+  height:auto;
+  border-radius:14px;
+  box-shadow:0 4px 12px rgba(0,0,0,.35);
 }
 
-body {
-  font-family: "Poppins", sans-serif;
-  background: linear-gradient(135deg, var(--azul-escuro), var(--azul-claro));
-  color: var(--texto);
-  margin: 0;
-  padding: 0;
-  min-height: 100vh;
+/* ================= TÍTULO PEQUENO ================= */
+.titulo-liga{
+  color:#fff;
+  text-align:center;
+  font-size:22px;
+  margin:6px 0 15px;
+  font-weight:bold;
 }
 
-/* ======== BANNER ======== */
-.banner-liga {
-  width: 100%;
-  text-align: center;
-  margin-top: 12px;
+/* ================= PRÓXIMOS JOGOS ================= */
+.proximos-jogos{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:15px;
+  margin:15px 0 10px;
 }
-.banner-liga img {
-  width: 95%;
-  max-width: 900px;
-  border-radius: 16px;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+.proximo-card{
+  background:#fff;
+  border-left:6px solid #c40000;
+  padding:12px 15px;
+  border-radius:10px;
+  box-shadow:0 2px 6px rgba(0,0,0,.2);
+}
+.proximo-card h3{margin:0 0 8px;color:#111;font-size:16px}
+.proximo-card p{margin:4px 0;font-size:14px}
+.proximo-card .confronto{
+  margin-top:8px;
+  font-size:18px;
+  font-weight:bold;
+  text-align:center;
+}
+.proximo-card .confronto span{margin:0 6px;color:#c40000}
+
+/* ================= TICKER ================= */
+.ticker{
+  width:100%;
+  overflow:hidden;
+  background:#111;
+  border-radius:8px;
+  margin:10px 0 25px;
+}
+.ticker-track{
+  display:flex;
+  gap:50px;
+  padding:12px 0;
+  width:max-content;
+  animation:tickerMove 20s linear infinite;
+}
+.ticker-track span{
+  color:#fff;
+  font-weight:bold;
+  white-space:nowrap;
+  font-size:16px;
+}
+@keyframes tickerMove{
+  from{transform:translateX(100%)}
+  to{transform:translateX(-100%)}
+}
+.ticker:hover .ticker-track{animation-play-state:paused}
+
+/* ================= GERAL ================= */
+body{
+  font-family:Arial,sans-serif;
+  background:linear-gradient(90deg,#004aad,#8ba9d1);
+  margin:0;
+  padding:10px;
+}
+h2{color:#fff;text-align:center}
+
+table{
+  width:100%;
+  background:#fff;
+  border-collapse:collapse;
+}
+th,td{
+  border:1px solid #ddd;
+  padding:8px;
+  text-align:center;
+}
+th{background:#111;color:#fff}
+.classificado{background:#c40000;color:#fff;font-weight:bold}
+
+.time-cell{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  justify-content:center;
+}
+.time-cell img{
+  width:42px;
+  height:42px;
+  object-fit:contain;
 }
 
-/* ======== TÍTULO ======== */
-.titulo-liga {
-  text-align: center;
-  color: var(--branco);
-  font-size: 2rem;
-  font-weight: 700;
-  margin: 20px 0 10px;
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+.jogos{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin-top:15px;
+}
+.jogo{
+  background:#fff;
+  padding:12px;
+  border-radius:10px;
+}
+.jogo h3{text-align:center;margin:0 0 6px}
+.times{
+  display:flex;
+  justify-content:space-between;
+  font-weight:bold;
+  margin-bottom:8px;
+}
+.time{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.time img{width:36px;height:36px}
+
+.set{text-align:center}
+.placar{
+  display:flex;
+  gap:5px;
+  justify-content:center;
+}
+input{width:45px;text-align:center}
+input.logo{width:100%}
+
+button{
+  position:fixed;
+  bottom:15px;
+  right:15px;
+  padding:12px 18px;
 }
 
-/* ======== PRÓXIMOS JOGOS ======== */
-.proximos-jogos {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 16px;
-  margin: 20px;
-}
-.proximo-card {
-  background: var(--branco);
-  border-radius: 14px;
-  padding: 18px;
-  box-shadow: 0 3px 10px var(--sombra);
-  border-top: 6px solid var(--azul-claro);
-  transition: 0.3s;
-}
-.proximo-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-}
-.proximo-card h3 {
-  margin: 0 0 10px;
-  color: var(--azul-escuro);
-}
-.proximo-card p {
-  margin: 4px 0;
-  font-size: 0.95rem;
-}
-.confronto {
-  text-align: center;
-  font-size: 1.2rem;
-  font-weight: bold;
-  margin-top: 10px;
-  color: var(--secundaria);
+/* ================= MOBILE ================= */
+@media(max-width:700px){
+  .proximos-jogos{grid-template-columns:1fr}
+  .banner-liga img{max-height:160px;object-fit:contain}
+  .titulo-liga{font-size:18px}
+  .ticker-track span{font-size:14px}
 }
 
-/* ======== TICKER ======== */
-.ticker {
-  overflow: hidden;
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
-  margin: 25px 0;
-  padding: 10px 0;
-  border-radius: 10px;
-  backdrop-filter: blur(6px);
-}
-.ticker-track {
-  display: flex;
-  gap: 50px;
-  animation: tickerMove 20s linear infinite;
-  font-weight: 600;
-}
-.ticker:hover .ticker-track {
-  animation-play-state: paused;
-}
-@keyframes tickerMove {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(-100%);
-  }
-}
-
-/* ======== TABELA ======== */
-h2 {
-  text-align: center;
-  color: var(--branco);
-  text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-  margin-top: 30px;
-}
-table {
-  width: 92%;
-  margin: 10px auto;
-  border-collapse: collapse;
-  background: var(--branco);
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 4px 12px var(--sombra);
-}
-th {
-  background: var(--azul-escuro);
-  color: #fff;
-  padding: 12px;
-}
-td {
-  padding: 10px;
-  text-align: center;
-  border-bottom: 1px solid #eee;
-}
-tr:hover {
-  background: #f0f7ff;
-}
-.classificado {
-  background: #e4f1ff;
-  font-weight: 700;
-  color: var(--azul-escuro);
-}
-
-/* ======== JOGOS ======== */
-.jogos {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 16px;
-  margin: 20px;
-}
-.jogo {
-  background: var(--branco);
-  border-radius: 14px;
-  box-shadow: 0 3px 10px var(--sombra);
-  padding: 16px;
-}
-.jogo h3 {
-  text-align: center;
-  margin-bottom: 10px;
-  color: var(--azul-escuro);
-}
-.times {
-  display: flex;
-  justify-content: space-between;
-  font-weight: bold;
-  color: var(--secundaria);
-}
-.set {
-  text-align: center;
-  margin-top: 8px;
-}
-input {
-  width: 45px;
-  text-align: center;
-  border: 1px solid #ccc;
-  border-radius: 6px;
-  padding: 4px;
-}
-
-/* ======== BOTÃO ADMIN ======== */
-button {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: var(--secundaria);
-  color: #fff;
-  border: none;
-  padding: 12px 20px;
-  border-radius: 10px;
-  font-weight: 600;
-  cursor: pointer;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
-  transition: 0.3s;
-}
-button:hover {
-  background: #ff6666;
-  transform: scale(1.05);
-}
-
-/* ======== MOBILE ======== */
-@media (max-width: 700px) {
-  .titulo-liga {
-    font-size: 1.5rem;
-  }
-  table {
-    font-size: 0.9rem;
-  }
-  .proximos-jogos, .jogos {
-    margin: 10px;
-  }
-}
 </style>
 </head>
 
 <body>
-  <!-- BANNER -->
-  <div class="banner-liga">
-    <img src="bannerliga.png" alt="Liga 4x4 Vôlei Misto" />
-  </div>
-  <h1 class="titulo-liga">🏐 Liga 4x4 Bugatti de Vôlei 🏐</h1>
 
-  <!-- PRÓXIMOS JOGOS -->
-  <div class="proximos-jogos">
-    <div class="proximo-card">
-      <h3>🔜 Próximo Jogo</h3>
-      <p><strong>📅 Data:</strong> À definir</p>
-      <p><strong>📍 Local:</strong> À definir</p>
-      <p class="confronto">🟡 À definir <span>x</span> À definir 🔴</p>
-    </div>
+<!-- BANNER + TÍTULO -->
+<div class="banner-liga">
+  <img src="bannerliga.png" alt="Liga 4x4 Vôlei Misto">
+</div>
+<h1 class="titulo-liga">🏐 Liga 4x4 Vôlei Misto</h1>
 
-    <div class="proximo-card">
-      <h3>⏭️ Jogo Seguinte</h3>
-      <p><strong>📅 Data:</strong> À definir</p>
-      <p><strong>📍 Local:</strong> À definir</p>
-      <p class="confronto">🔵 À definir <span>x</span> À definir ⚫</p>
-    </div>
+<!-- PRÓXIMOS JOGOS -->
+<div class="proximos-jogos">
+  <div class="proximo-card">
+    <h3>🔜 Próximo Jogo</h3>
+    <p><strong>📅 Data:</strong> 05 de janeiro – 20h</p>
+    <p><strong>📍 Local:</strong> Arena Belém</p>
+    <p class="confronto">Time 1 <span>x</span> Time 2</p>
   </div>
 
-  <!-- TICKER -->
-  <div class="ticker">
-    <div class="ticker-track">
-      <span>📅 Jogos iniciam final de janeiro | Porto Alegre |🏐</span>
-      <span>💲 chave pix: liga4x4volei@gmail.com</span>
-    </div>
+  <div class="proximo-card">
+    <h3>⏭️ Jogo Seguinte</h3>
+    <p><strong>📅 Data:</strong> 07 de janeiro – 19h</p>
+    <p><strong>📍 Local:</strong> Arena Belém</p>
+    <p class="confronto">Time 3 <span>x</span> Time 4</p>
   </div>
+</div>
 
-  <h2>🏆 Classificação</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Pos</th>
-        <th>Time</th>
-        <th>J</th>
-        <th>Sets+</th>
-        <th>Saldo</th>
-        <th>Vit</th>
-      </tr>
-    </thead>
-    <tbody id="classificacao"></tbody>
-  </table>
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track">
+    <span>📅 05/01 – 20h | Arena Belém | Time 1 x Time 2</span>
+    <span>📅 07/01 – 19h | Arena Belém | Time 3 x Time 4</span>
+    <span>📅 10/01 – 21h | Ginásio Central | Time 5 x Time 6</span>
+  </div>
+</div>
 
-  <h2>📋 Jogos</h2>
-  <div class="jogos" id="jogos"></div>
+<h2>🏆 Classificação</h2>
+<table>
+<thead>
+<tr>
+<th>Pos</th><th>Time</th><th>J</th><th>Sets+</th><th>Saldo</th><th>Vit</th>
+</tr>
+</thead>
+<tbody id="classificacao"></tbody>
+</table>
 
-  <button onclick="toggleAdmin()">ADMIN</button>
+<h2>📋 Jogos</h2>
+<div class="jogos" id="jogos"></div>
 
-  <!-- FIREBASE -->
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+<button onclick="toggleAdmin()">ADMIN</button>
 
-  <script>
-    firebase.initializeApp({
-      apiKey: "AIzaSyCovHcUFKP9dtwRxfnajhvGUgluCFp0HVQ",
-      authDomain: "liga4x4volei-71358.firebaseapp.com",
-      projectId: "liga4x4volei-71358"
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCovHcUFKP9dtwRxfnajhvGUgluCFp0HVQ",
+  authDomain: "liga4x4volei-71358.firebaseapp.com",
+  projectId: "liga4x4volei-71358"
+});
+
+const db = firebase.firestore();
+const REF = db.collection("liga4x4").doc("dados");
+
+const TIMES = Array.from({length:12},(_,i)=>`t${i+1}`);
+let nomesTimes={},logosTimes={},jogos=[],isAdmin=false;
+
+TIMES.forEach((id,i)=>{nomesTimes[id]=`Time ${i+1}`;logosTimes[id]=""});
+
+function criarJogos(){
+  jogos=[];
+  for(let i=0;i<TIMES.length;i++){
+    for(let j=i+1;j<TIMES.length;j++){
+      jogos.push({
+        a:TIMES[i],b:TIMES[j],
+        sets:{s1:{a:null,b:null},s2:{a:null,b:null},s3:{a:null,b:null}}
+      });
+    }
+  }
+}
+
+function toggleAdmin(){
+  if(prompt("Senha:")==="liga4x4"){isAdmin=!isAdmin;render();}
+}
+
+async function salvar(){
+  await REF.set({nomesTimes,logosTimes,jogos},{merge:true});
+}
+
+function atualizar(j,s,t,v){
+  jogos[j].sets[s][t]=v===""?null:+v;
+  salvar();renderClassificacao();
+}
+
+function calcular(){
+  const stats={};
+  TIMES.forEach(t=>stats[t]={j:0,sets:0,saldo:0,vit:0});
+  jogos.forEach(j=>{
+    let sa=0,sb=0,real=false;
+    Object.values(j.sets).forEach(s=>{
+      if(s.a!=null&&s.b!=null){
+        real=true;
+        if(s.a>s.b){sa++;stats[j.a].sets++;stats[j.a].saldo++;stats[j.b].saldo--;}
+        else{sb++;stats[j.b].sets++;stats[j.b].saldo++;stats[j.a].saldo--;}
+      }
     });
+    if(real){stats[j.a].j++;stats[j.b].j++;}
+    if(sa>=2)stats[j.a].vit++;
+    if(sb>=2)stats[j.b].vit++;
+  });
+  return stats;
+}
 
-    const db = firebase.firestore();
-    const REF = db.collection("liga4x4").doc("dados");
-
-    const TIMES = Array.from({ length: 12 }, (_, i) => `t${i + 1}`);
-    let nomesTimes = {}, logosTimes = {}, jogos = [], isAdmin = false;
-
-    TIMES.forEach((id, i) => { nomesTimes[id] = `Time ${i + 1}`; logosTimes[id] = ""; });
-
-    function criarJogos() {
-      jogos = [];
-      for (let i = 0; i < TIMES.length; i++) {
-        for (let j = i + 1; j < TIMES.length; j++) {
-          jogos.push({
-            a: TIMES[i], b: TIMES[j],
-            sets: { s1: { a: null, b: null }, s2: { a: null, b: null }, s3: { a: null, b: null } }
-          });
-        }
-      }
-    }
-
-    function toggleAdmin() {
-      if (prompt("Senha:") === "liga4x4") { isAdmin = !isAdmin; render(); }
-    }
-
-    async function salvar() {
-      await REF.set({ nomesTimes, logosTimes, jogos }, { merge: true });
-    }
-
-    function atualizar(j, s, t, v) {
-      jogos[j].sets[s][t] = v === "" ? null : +v;
-      salvar(); renderClassificacao();
-    }
-
-    function calcular() {
-      const stats = {};
-      TIMES.forEach(t => stats[t] = { j: 0, sets: 0, saldo: 0, vit: 0 });
-      jogos.forEach(j => {
-        let sa = 0, sb = 0, real = false;
-        Object.values(j.sets).forEach(s => {
-          if (s.a != null && s.b != null) {
-            real = true;
-            if (s.a > s.b) { sa++; stats[j.a].sets++; stats[j.a].saldo++; stats[j.b].saldo--; }
-            else { sb++; stats[j.b].sets++; stats[j.b].saldo++; stats[j.a].saldo--; }
-          }
-        });
-        if (real) { stats[j.a].j++; stats[j.b].j++; }
-        if (sa >= 2) stats[j.a].vit++;
-        if (sb >= 2) stats[j.b].vit++;
-      });
-      return stats;
-    }
-
-    function renderClassificacao() {
-      const stats = calcular();
-      const tb = document.getElementById("classificacao");
-      tb.innerHTML = "";
-      Object.entries(stats)
-        .sort(([, a], [, b]) => b.sets - a.sets || b.saldo - a.saldo)
-        .forEach(([id, s], i) => {
-          tb.innerHTML += `
-          <tr class="${i < 4 ? "classificado" : ""}">
-            <td>${i + 1}</td>
-            <td>${nomesTimes[id]}</td>
-            <td>${s.j}</td><td>${s.sets}</td><td>${s.saldo}</td><td>${s.vit}</td>
-          </tr>`;
-        });
-    }
-
-    function renderJogos() {
-      const div = document.getElementById("jogos");
-      div.innerHTML = "";
-      jogos.forEach((j, i) => {
-        div.innerHTML += `
-        <div class="jogo">
-          <h3>Jogo ${i + 1}</h3>
-          <div class="times">
-            <div>${nomesTimes[j.a]}</div>
-            <div>${nomesTimes[j.b]}</div>
+function renderClassificacao(){
+  const stats=calcular();
+  const tb=document.getElementById("classificacao");
+  tb.innerHTML="";
+  Object.entries(stats)
+    .sort(([,a],[,b])=>b.sets-a.sets||b.saldo-a.saldo)
+    .forEach(([id,s],i)=>{
+      tb.innerHTML+=`
+      <tr class="${i<4?'classificado':''}">
+        <td>${i+1}</td>
+        <td>
+          <div class="time-cell">
+            ${logosTimes[id]?`<img src="${logosTimes[id]}">`:``}
+            ${isAdmin?`<div>
+              <input value="${nomesTimes[id]}" oninput="nomesTimes['${id}']=this.value;salvar();renderJogos()">
+              <input class="logo" value="${logosTimes[id]}" placeholder="URL do logo"
+                oninput="logosTimes['${id}']=this.value;salvar();render()">
+            </div>`:nomesTimes[id]}
           </div>
-          ${Object.entries(j.sets).map(([k, s]) => `
-          <div class="set">${k.toUpperCase()}
-            <div class="placar">
-              <input ${!isAdmin ? "disabled" : ""} value="${s.a ?? ""}" onchange="atualizar(${i},'${k}','a',this.value)"> x
-              <input ${!isAdmin ? "disabled" : ""} value="${s.b ?? ""}" onchange="atualizar(${i},'${k}','b',this.value)">
-            </div>
-          </div>`).join("")}
-        </div>`;
-      });
-    }
+        </td>
+        <td>${s.j}</td><td>${s.sets}</td><td>${s.saldo}</td><td>${s.vit}</td>
+      </tr>`;
+    });
+}
 
-    function render() { renderClassificacao(); renderJogos(); }
+function renderJogos(){
+  const div=document.getElementById("jogos");
+  div.innerHTML="";
+  jogos.forEach((j,i)=>{
+    div.innerHTML+=`
+    <div class="jogo">
+      <h3>Jogo ${i+1}</h3>
+      <div class="times">
+        <div class="time">${nomesTimes[j.a]}</div>
+        <div class="time">${nomesTimes[j.b]}</div>
+      </div>
+      ${Object.entries(j.sets).map(([k,s])=>`
+      <div class="set">${k.toUpperCase()}
+        <div class="placar">
+          <input ${!isAdmin?"disabled":""} value="${s.a??""}"
+            onchange="atualizar(${i},'${k}','a',this.value)"> x
+          <input ${!isAdmin?"disabled":""} value="${s.b??""}"
+            onchange="atualizar(${i},'${k}','b',this.value)">
+        </div>
+      </div>`).join("")}
+    </div>`;
+  });
+}
 
-    async function iniciar() {
-      const snap = await REF.get();
-      if (snap.exists) {
-        const d = snap.data();
-        nomesTimes = d.nomesTimes || nomesTimes;
-        logosTimes = d.logosTimes || logosTimes;
-        jogos = Array.isArray(d.jogos) ? d.jogos : [];
-      }
-      if (jogos.length === 0) { criarJogos(); salvar(); }
-      render();
-    }
-    iniciar();
-  </script>
+function render(){renderClassificacao();renderJogos();}
+
+async function iniciar(){
+  const snap=await REF.get();
+  if(snap.exists){
+    const d=snap.data();
+    nomesTimes=d.nomesTimes||nomesTimes;
+    logosTimes=d.logosTimes||logosTimes;
+    jogos=Array.isArray(d.jogos)?d.jogos:[];
+  }
+  if(jogos.length===0){criarJogos();salvar();}
+  render();
+}
+iniciar();
+</script>
+
 </body>
 </html>
