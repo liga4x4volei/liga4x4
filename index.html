@@ -288,11 +288,16 @@ tr:hover {
   font-weight: 700;
 }
 .placar {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  align-items: center;
+  display: flex !important;
+  gap: 15px !important;
+  justify-content: center !important;
+  align-items: center !important;
+  position: relative !important;
 }
+.placar::after {
+  display: none !important;  /* ✅ MATA O "X" EXTRA */
+}
+
 .placar input {
   width: 55px;
   height: 55px;
@@ -603,6 +608,7 @@ iniciar();
 </script>
 </body>
 </html>
+
 
 
 
