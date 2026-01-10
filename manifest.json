@@ -1,17 +1,10 @@
 {
-  "name": "🏐 Liga 4x4 Agendamentos",
-  "short_name": "Liga 4x4", 
-  "start_url": "/liga4x4/",
-  "scope": "/liga4x4/",
+  "name": "🏐 Liga 4x4",
+  "short_name": "Liga4x4", 
+  "start_url": ".",
   "display": "standalone",
-  "background_color": "#004aad",
-  "theme_color": "#0d99ff",
   "icons": [
-    {
-      "src": "/liga4x4/icon-512.png",
-      "sizes": "512x512", 
-      "type": "image/png"
-    }
+    {"src": "icon-512.png","sizes": "512x512","type": "image/png"}
   ]
 }
 
