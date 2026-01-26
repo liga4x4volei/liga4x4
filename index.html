@@ -574,7 +574,7 @@ function renderJogos() {
   jogos.forEach((j, i) => {
     div.innerHTML += `
     <div class="jogo">
-      <h3>Jogo ${i + 1} <small style="font-size:12px;color:#ff6b6b;">(${nomesTimes[j.a]} x ${nomesTimes[j.b]})</small></h3>
+      <h3>Jogo ${i + 1}</h3>
       <div class="times">
         <div class="time">
           ${logosTimes[j.a] ? `<img src="${logosTimes[j.a]}" onerror="this.style.display='none'">` : ''}
@@ -659,6 +659,7 @@ async function iniciar() {
 // INICIALIZAÇÃO
 iniciar();
 </script>
+
 
 
 
