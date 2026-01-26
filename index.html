@@ -464,153 +464,169 @@ firebase.initializeApp({
 const db = firebase.firestore();
 const REF = db.collection("liga4x4").doc("dados");
 
-const TIMES = Array.from({length:9},(_,i)=>`t${i+1}`);
-let nomesTimes={}, logosTimes={}, jogos=[], isAdmin=false;
+// ✅ CAMPO EDITÁVEL - MUDA AQUI O NÚMERO DE TIMES!
+const NUM_TIMES = 9;  // ← ALTERE: 6, 7, 8, 9, 10, 12...
 
-TIMES.forEach((id,i)=>{
-  nomesTimes[id]=`Time ${i+1}`;
-  logosTimes[id]="";
+const TIMES = Array.from({length: NUM_TIMES}, (_, i) => `t${i+1}`);
+let nomesTimes = {}, logosTimes = {}, jogos = [], isAdmin = false;
+
+// Inicializa nomes padrão
+TIMES.forEach((id, i) => {
+  nomesTimes[id] = `Time ${i + 1}`;
+  logosTimes[id] = "";
 });
 
-function criarJogos(){
-  jogos=[];
-  for(let i=0;i<TIMES.length;i++){
-    for(let j=i+1;j<TIMES.length;j++){
+function criarJogos() {
+  jogos = [];
+  for (let i = 0; i < TIMES.length; i++) {
+    for (let j = i + 1; j < TIMES.length; j++) {
       jogos.push({
-        a:TIMES[i],b:TIMES[j],
-        sets:{s1:{a:null,b:null},s2:{a:null,b:null},s3:{a:null,b:null}}
+        a: TIMES[i], b: TIMES[j],
+        sets: { s1: { a: null, b: null }, s2: { a: null, b: null }, s3: { a: null, b: null } }
       });
     }
   }
 }
 
-function toggleAdmin(){
-  if(prompt("Senha:")==="liga4x4"){
-    isAdmin=!isAdmin;
+function toggleAdmin() {
+  const senha = prompt("Senha ADMIN:");
+  if (senha === "liga4x4") {
+    isAdmin = !isAdmin;
     render();
+    alert(isAdmin ? "✅ MODO ADMIN ATIVADO!" : "🔒 MODO ADMIN DESATIVADO");
+  } else if (senha) {
+    alert("❌ Senha incorreta!");
   }
 }
 
-async function salvar(){
-  await REF.set({nomesTimes,logosTimes,jogos},{merge:true});
+async function salvar() {
+  await REF.set({ nomesTimes, logosTimes, jogos }, { merge: true });
 }
 
-function atualizar(j,s,t,v){
-  jogos[j].sets[s][t]=v===""?null:+v;
-  salvar();renderClassificacao();
+function atualizar(j, s, t, v) {
+  jogos[j].sets[s][t] = v === "" ? null : +v;
+  salvar();
+  renderClassificacao();
 }
 
-function calcular(){
-  const stats={};
-  TIMES.forEach(t=>stats[t]={j:0,sets:0,saldo:0,vit:0});
-  jogos.forEach(j=>{
-    let sa=0,sb=0,real=false;
-    Object.values(j.sets).forEach(s=>{
-      if(s.a!=null&&s.b!=null){
-        real=true;
-        if(s.a>s.b){sa++;stats[j.a].sets++;stats[j.a].saldo++;stats[j.b].saldo--;}
-        else{sb++;stats[j.b].sets++;stats[j.b].saldo++;stats[j.a].saldo--;}
+function calcular() {
+  const stats = {};
+  TIMES.forEach(t => stats[t] = { j: 0, sets: 0, saldo: 0, vit: 0 });
+  
+  jogos.forEach(j => {
+    let sa = 0, sb = 0, real = false;
+    Object.values(j.sets).forEach(s => {
+      if (s.a != null && s.b != null) {
+        real = true;
+        if (s.a > s.b) { sa++; stats[j.a].sets++; stats[j.a].saldo++; stats[j.b].saldo--; }
+        else { sb++; stats[j.b].sets++; stats[j.b].saldo++; stats[j.a].saldo--; }
       }
     });
-    if(real){stats[j.a].j++;stats[j.b].j++;}
-    if(sa>=2)stats[j.a].vit++;
-    if(sb>=2)stats[j.b].vit++;
+    if (real) { stats[j.a].j++; stats[j.b].j++; }
+    if (sa >= 2) stats[j.a].vit++;
+    if (sb >= 2) stats[j.b].vit++;
   });
   return stats;
 }
 
-function renderClassificacao(){
-  const stats=calcular();
-  const tb=document.getElementById("classificacao");
-  tb.innerHTML="";
+function renderClassificacao() {
+  const stats = calcular();
+  const tb = document.getElementById("classificacao");
+  tb.innerHTML = "";
+  
   Object.entries(stats)
-    .sort(([,a],[,b])=>b.sets-a.sets||b.saldo-a.saldo)
-    .forEach(([id,s],i)=>{
-      tb.innerHTML+=`
-      <tr class="${i<4?'classificado':''}">
-        <td>${i+1}</td>
+    .sort(([, a], [, b]) => b.sets - a.sets || b.saldo - a.saldo)
+    .forEach(([id, s], i) => {
+      tb.innerHTML += `
+      <tr class="${i < 4 ? 'classificado' : ''}">
+        <td>${i + 1}º</td>
         <td>
           <div class="time-cell">
-            ${logosTimes[id]?`<img src="${logosTimes[id]}">`:``}
-            ${isAdmin?`
+            ${logosTimes[id] ? `<img src="${logosTimes[id]}" onerror="this.style.display='none'">` : ''}
+            ${isAdmin ? `
               <div style="display:flex;flex-direction:column;gap:5px;width:100%;">
-                <input value="${nomesTimes[id]}" oninput="nomesTimes['${id}']=this.value;salvar();renderJogos();" 
-                  style="padding:8px;border-radius:8px;border:2px solid #ff6b6b;">
-                <input class="logo" value="${logosTimes[id]}" placeholder="URL do logo"
+                <input value="${nomesTimes[id]}" oninput="nomesTimes['${id}']=this.value;salvar();render();" 
+                  style="padding:8px;border-radius:8px;border:2px solid #4CAF50;font-weight:600;">
+                <input class="logo" value="${logosTimes[id]}" placeholder="URL logo (opcional)"
                   oninput="logosTimes['${id}']=this.value;salvar();render();" 
-                  style="padding:8px;border-radius:8px;border:2px solid #667eea;">
+                  style="padding:8px;border-radius:8px;border:2px solid #2196F3;font-size:12px;">
               </div>
-            `:nomesTimes[id]}
+            ` : `<span style="font-weight:700;">${nomesTimes[id]}</span>`}
           </div>
         </td>
-        <td>${s.j}</td><td>${s.sets}</td><td>${s.saldo}</td><td>${s.vit}</td>
+        <td>${s.j}</td>
+        <td>${s.sets}</td>
+        <td>${s.saldo}</td>
+        <td>${s.vit}</td>
       </tr>`;
     });
 }
 
-function renderJogos(){
-  const div=document.getElementById("jogos");
-  div.innerHTML="";
+function renderJogos() {
+  const div = document.getElementById("jogos");
+  div.innerHTML = `
+    <div style="text-align:center;padding:20px;color:white;font-size:18px;">
+      <strong>${jogos.length} JOGOS GERADOS</strong><br>
+      <small style="opacity:0.8;">${TIMES.length} times = ${jogos.length} confrontos</small>
+    </div>
+  `;
   
-  jogos.forEach((j,i)=>{
-    div.innerHTML+=`
+  jogos.forEach((j, i) => {
+    div.innerHTML += `
     <div class="jogo">
-      <h3>Jogo ${i+1}</h3>
+      <h3>Jogo ${i + 1} <small style="font-size:12px;color:#ff6b6b;">(${nomesTimes[j.a]} x ${nomesTimes[j.b]})</small></h3>
       <div class="times">
         <div class="time">
-          ${logosTimes[j.a]?`<img src="${logosTimes[j.a]}" onerror="this.style.display='none'">`:''}
+          ${logosTimes[j.a] ? `<img src="${logosTimes[j.a]}" onerror="this.style.display='none'">` : ''}
           <span>${nomesTimes[j.a]}</span>
         </div>
         <div style="font-size:24px;font-weight:800;color:#ff6b6b;">VS</div>
         <div class="time">
-          ${logosTimes[j.b]?`<img src="${logosTimes[j.b]}" onerror="this.style.display='none'">`:''}
+          ${logosTimes[j.b] ? `<img src="${logosTimes[j.b]}" onerror="this.style.display='none'">` : ''}
           <span>${nomesTimes[j.b]}</span>
         </div>
       </div>
       
-      <!-- SET 1 -->
       <div class="set">
-        <strong style="text-align:center;display:block;">SET 1</strong>
+        <strong>SET 1</strong>
         <div class="placar">
-          <input ${!isAdmin?"disabled style='opacity:0.7'":""} 
-            value="${j.sets.s1.a??''}" min="0" max="30"
+          <input ${!isAdmin ? "disabled style='opacity:0.7'" : ""} 
+            value="${j.sets.s1.a ?? ''}" min="0" max="30"
             onchange="atualizar(${i},'s1','a',this.value)"
             style="font-weight:700;"> 
           <span style="color:#ff6b6b;font-size:22px;font-weight:800;">×</span>
-          <input ${!isAdmin?"disabled style='opacity:0.7'":""} 
-            value="${j.sets.s1.b??''}" min="0" max="30"
+          <input ${!isAdmin ? "disabled style='opacity:0.7'" : ""} 
+            value="${j.sets.s1.b ?? ''}" min="0" max="30"
             onchange="atualizar(${i},'s1','b',this.value)"
             style="font-weight:700;">
         </div>
       </div>
       
-      <!-- SET 2 -->
       <div class="set">
-        <strong style="text-align:center;display:block;">SET 2</strong>
+        <strong>SET 2</strong>
         <div class="placar">
-          <input ${!isAdmin?"disabled style='opacity:0.7'":""} 
-            value="${j.sets.s2.a??''}" min="0" max="30"
+          <input ${!isAdmin ? "disabled style='opacity:0.7'" : ""} 
+            value="${j.sets.s2.a ?? ''}" min="0" max="30"
             onchange="atualizar(${i},'s2','a',this.value)"
             style="font-weight:700;"> 
           <span style="color:#ff6b6b;font-size:22px;font-weight:800;">×</span>
-          <input ${!isAdmin?"disabled style='opacity:0.7'":""} 
-            value="${j.sets.s2.b??''}" min="0" max="30"
+          <input ${!isAdmin ? "disabled style='opacity:0.7'" : ""} 
+            value="${j.sets.s2.b ?? ''}" min="0" max="30"
             onchange="atualizar(${i},'s2','b',this.value)"
             style="font-weight:700;">
         </div>
       </div>
       
-      <!-- SET 3 (Tie-break) -->
       <div class="set">
-        <strong style="text-align:center;display:block;">SET 3 (Tie)</strong>
+        <strong>SET 3 (Tie-break)</strong>
         <div class="placar">
-          <input ${!isAdmin?"disabled style='opacity:0.7'":""} 
-            value="${j.sets.s3.a??''}" min="0" max="25"
+          <input ${!isAdmin ? "disabled style='opacity:0.7'" : ""} 
+            value="${j.sets.s3.a ?? ''}" min="0" max="25"
             onchange="atualizar(${i},'s3','a',this.value)"
             style="font-weight:700;"> 
           <span style="color:#ff6b6b;font-size:22px;font-weight:800;">×</span>
-          <input ${!isAdmin?"disabled style='opacity:0.7'":""} 
-            value="${j.sets.s3.b??''}" min="0" max="25"
+          <input ${!isAdmin ? "disabled style='opacity:0.7'" : ""} 
+            value="${j.sets.s3.b ?? ''}" min="0" max="25"
             onchange="atualizar(${i},'s3','b',this.value)"
             style="font-weight:700;">
         </div>
@@ -619,29 +635,32 @@ function renderJogos(){
   });
 }
 
-function render(){
+function render() {
   renderClassificacao();
   renderJogos();
 }
 
-async function iniciar(){
-  const snap=await REF.get();
-  if(snap.exists){
-    const d=snap.data();
-    nomesTimes=d.nomesTimes||nomesTimes;
-    logosTimes=d.logosTimes||logosTimes;
-    jogos=Array.isArray(d.jogos)?d.jogos:[];
+async function iniciar() {
+  const snap = await REF.get();
+  if (snap.exists) {
+    const d = snap.data();
+    nomesTimes = d.nomesTimes || nomesTimes;
+    logosTimes = d.logosTimes || logosTimes;
+    jogos = Array.isArray(d.jogos) ? d.jogos : [];
   }
-  if(jogos.length===0){
+  
+  if (jogos.length === 0) {
     criarJogos();
-    salvar();
+    await salvar();
   }
   render();
 }
+
+// INICIALIZAÇÃO
 iniciar();
 </script>
-</body>
-</html>
+
+
 
 
 
