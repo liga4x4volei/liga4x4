@@ -464,7 +464,7 @@ firebase.initializeApp({
 const db = firebase.firestore();
 const REF = db.collection("liga4x4").doc("dados");
 
-const TIMES = Array.from({length:12},(_,i)=>`t${i+1}`);
+const TIMES = Array.from({length:9},(_,i)=>`t${i+1}`);
 let nomesTimes={}, logosTimes={}, jogos=[], isAdmin=false;
 
 TIMES.forEach((id,i)=>{
@@ -642,6 +642,7 @@ iniciar();
 </script>
 </body>
 </html>
+
 
 
 
