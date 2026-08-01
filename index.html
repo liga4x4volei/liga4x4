@@ -535,7 +535,7 @@ function renderClassificacao() {
   tb.innerHTML = "";
   
   Object.entries(stats)
-    .sort(([, a], [, b]) => b.sets - a.sets || b.saldo - a.saldo)
+    .sort(([, a], [, b]) => b.sets - a.sets || b.saldo - a.saldo || b.vit - a.vit)
     .forEach(([id, s], i) => {
       tb.innerHTML += `
       <tr class="${i < 4 ? 'classificado' : ''}">
