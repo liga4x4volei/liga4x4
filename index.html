@@ -488,6 +488,12 @@ function criarJogos() {
   }
 }
 
+function escapeHtml(str) {
+  return String(str ?? "").replace(/[&<>"']/g, c => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  }[c]));
+}
+
 function toggleAdmin() {
   const senha = prompt("Senha ADMIN:");
   if (senha === "liga4x4") {
@@ -542,16 +548,16 @@ function renderClassificacao() {
         <td>${i + 1}º</td>
         <td>
           <div class="time-cell">
-            ${logosTimes[id] ? `<img src="${logosTimes[id]}" onerror="this.style.display='none'">` : ''}
+            ${logosTimes[id] ? `<img src="${escapeHtml(logosTimes[id])}" onerror="this.style.display='none'">` : ''}
             ${isAdmin ? `
               <div style="display:flex;flex-direction:column;gap:5px;width:100%;">
-                <input value="${nomesTimes[id]}" oninput="nomesTimes['${id}']=this.value;salvar();render();" 
+                <input value="${escapeHtml(nomesTimes[id])}" oninput="nomesTimes['${id}']=this.value;salvar();render();"
                   style="padding:8px;border-radius:8px;border:2px solid #4CAF50;font-weight:600;">
-                <input class="logo" value="${logosTimes[id]}" placeholder="URL logo (opcional)"
-                  oninput="logosTimes['${id}']=this.value;salvar();render();" 
+                <input class="logo" value="${escapeHtml(logosTimes[id])}" placeholder="URL logo (opcional)"
+                  oninput="logosTimes['${id}']=this.value;salvar();render();"
                   style="padding:8px;border-radius:8px;border:2px solid #2196F3;font-size:12px;">
               </div>
-            ` : `<span style="font-weight:700;">${nomesTimes[id]}</span>`}
+            ` : `<span style="font-weight:700;">${escapeHtml(nomesTimes[id])}</span>`}
           </div>
         </td>
         <td>${s.j}</td>
@@ -577,13 +583,13 @@ function renderJogos() {
       <h3>Jogo ${i + 1}</h3>
       <div class="times">
         <div class="time">
-          ${logosTimes[j.a] ? `<img src="${logosTimes[j.a]}" onerror="this.style.display='none'">` : ''}
-          <span>${nomesTimes[j.a]}</span>
+          ${logosTimes[j.a] ? `<img src="${escapeHtml(logosTimes[j.a])}" onerror="this.style.display='none'">` : ''}
+          <span>${escapeHtml(nomesTimes[j.a])}</span>
         </div>
         <div style="font-size:24px;font-weight:800;color:#ff6b6b;">VS</div>
         <div class="time">
-          ${logosTimes[j.b] ? `<img src="${logosTimes[j.b]}" onerror="this.style.display='none'">` : ''}
-          <span>${nomesTimes[j.b]}</span>
+          ${logosTimes[j.b] ? `<img src="${escapeHtml(logosTimes[j.b])}" onerror="this.style.display='none'">` : ''}
+          <span>${escapeHtml(nomesTimes[j.b])}</span>
         </div>
       </div>
       
